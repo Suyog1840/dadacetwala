@@ -2,9 +2,13 @@
 
 import React, { useState } from 'react';
 
-const AdminDashboard = ({ user }) => {
+interface AdminDashboardProps {
+    user?: any;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     // This state is just for the UI switcher visualization from the screenshot
-    const [activeUi, setActiveUi] = useState('Landing UI');
+    const [activeUi, setActiveUi] = useState<string>('Landing UI');
 
     return (
         <div className="bg-white min-h-screen font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -99,8 +103,8 @@ const AdminDashboard = ({ user }) => {
                                 key={ui}
                                 onClick={() => setActiveUi(ui)}
                                 className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${activeUi === ui
-                                        ? 'bg-[#3b82f6] text-white shadow-lg shadow-blue-200'
-                                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                    ? 'bg-[#3b82f6] text-white shadow-lg shadow-blue-200'
+                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
                                 {ui}
