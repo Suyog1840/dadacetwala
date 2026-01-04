@@ -12,9 +12,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-8">
-                <div className="flex justify-between h-16 items-center">
+                <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-[#1e40af] rounded-lg flex items-center justify-center font-black text-white shadow-md shadow-blue-100 text-base">

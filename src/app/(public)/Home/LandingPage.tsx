@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import Link from 'next/link';
 import Navbar from '../../../components/layout/Navbar';
 import Footer from '../../../components/layout/Footer';
 import { User } from '../../../types';
@@ -49,9 +49,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ user }) => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 mb-10 w-auto">
-                    <button className="w-auto bg-[#1e40af] hover:bg-[#1e3a8a] text-white px-8 py-3.5 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1 uppercase tracking-wider min-w-[180px]">
-                        Enroll Now
-                    </button>
+                    <Link href="/pricing" className="w-auto min-w-[180px]">
+                        <button className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] text-white px-8 py-3.5 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1 uppercase tracking-wider">
+                            Enroll Now
+                        </button>
+                    </Link>
                     <button className="w-auto bg-white border text-[#020617] border-gray-200 hover:border-gray-300 px-8 py-3.5 rounded-xl text-xs font-bold transition-all hover:bg-gray-50 min-w-[180px]">
                         Explore Predictor
                     </button>
