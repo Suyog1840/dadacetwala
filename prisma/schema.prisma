@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String   @id @default(uuid())
+  authProviderId  String
+  userName        String
+  email           String   @unique
+  contact         String?
+  role            String   // student | mentor | admin | super_admin
+  status          String
+  isEnrolled      Boolean  @default(false)
+  enrolledAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations (we will define models later)
+  studentProfile  StudentProfile?
+  mentorProfile   MentorProfile?
+  adminProfile    AdminProfile?
+  payments        Payment[]
+  notices         Notice[] @relation("NoticeCreator")
+}
+
+
+model StudentProfile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+
+  examType            String
+  cetPercentile       Float?    // ✅ nullable
+  rank                Int?      // ✅ nullable
+  category            String
+  domicileState       String
+  homeUniversity      String
+
+  isCounselingActive  Boolean  @default(false)
+  plan                String
+  preferredUniversity String
+
+  createdAt           DateTime @default(now())
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model MentorProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  name              String
+  contact           String   @unique
+  createdAt         DateTime @default(now())
+
+  // Relation
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model AdminProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  // Relation
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model Payment {
+  id             String   @id @default(uuid())
+  userId         String
+
+  amount         Float
+  currency       String   @default("INR")
+  paymentStatus  String   // pending | success | failed
+  transactionId  String?  @unique
+  paidAt         DateTime?
+
+  createdAt      DateTime @default(now())
+
+  // Relation
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model Notice {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  date        String
+  createdAt   DateTime @default(now())
+  seen        Boolean  @default(false)
+  priority    String
+  createdBy   String   @default("admin")
+  user     User     @relation("NoticeCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+}
