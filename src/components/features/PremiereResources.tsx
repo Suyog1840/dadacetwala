@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { ServiceCard } from './ServiceCard';
 
 export const PremiereResources: React.FC = () => {
@@ -14,25 +15,31 @@ export const PremiereResources: React.FC = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                     <div className="col-span-1">
-                        <ServiceCard
-                            title="College Lists"
-                            description="Access government & private college lists."
-                            icon={<span className="text-2xl md:text-3xl">🏛️</span>}
-                        />
+                        <Link href="/register" className="block h-full">
+                            <ServiceCard
+                                title="College Lists"
+                                description="Access government & private college lists."
+                                icon={<span className="text-2xl md:text-3xl">🏛️</span>}
+                            />
+                        </Link>
                     </div>
                     <div className="col-span-1">
-                        <ServiceCard
-                            title="Fees Structure"
-                            description="Detailed tuition & fees breakdown."
-                            icon={<span className="text-2xl md:text-3xl">💰</span>}
-                        />
+                        <Link href="/register" className="block h-full">
+                            <ServiceCard
+                                title="Fees Structure"
+                                description="Detailed tuition & fees breakdown."
+                                icon={<span className="text-2xl md:text-3xl">💰</span>}
+                            />
+                        </Link>
                     </div>
                     <div className="col-span-2 md:col-span-1">
-                        <ServiceCard
-                            title="Documents"
-                            description="Lists tailored to your category."
-                            icon={<span className="text-2xl md:text-3xl">📂</span>}
-                        />
+                        <Link href="/register" className="block h-full">
+                            <ServiceCard
+                                title="Documents"
+                                description="Lists tailored to your category."
+                                icon={<span className="text-2xl md:text-3xl">📂</span>}
+                            />
+                        </Link>
                     </div>
                 </div>
             </div>

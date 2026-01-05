@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export const SmartPredictor: React.FC = () => {
     return (
@@ -27,9 +28,11 @@ export const SmartPredictor: React.FC = () => {
                                 className="w-32 h-10 bg-transparent text-center text-xl font-bold text-[#020617] focus:outline-none placeholder-gray-300"
                             />
                         </div>
-                        <button className="h-14 bg-[#020617] hover:bg-[#1e40af] text-white px-8 rounded-xl text-xs font-bold shadow-lg shadow-blue-900/10 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider flex items-center justify-center gap-2 w-full sm:w-auto">
-                            Find Colleges
-                        </button>
+                        <Link href="/register" className="w-full sm:w-auto">
+                            <button className="h-14 bg-[#020617] hover:bg-[#1e40af] text-white px-8 rounded-xl text-xs font-bold shadow-lg shadow-blue-900/10 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider flex items-center justify-center gap-2 w-full">
+                                Find Colleges
+                            </button>
+                        </Link>
                     </div>
 
                     {/* Discovery Mode */}

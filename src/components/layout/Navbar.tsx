@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
+import Link from 'next/link';
 import { User } from "../types";
 
 interface NavbarProps {
@@ -53,12 +54,19 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                             <div className="flex items-center gap-5">
                                 <div className="flex flex-col items-end">
                                     <span className="text-xs font-bold text-[#02042b]">{user.name}</span>
-                                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">{user.role}</span>
+                                    {user.role === 'unenrolled' && (
+                                        <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest border border-blue-100 bg-blue-50 px-1.5 py-0.5 rounded">Unenrolled</span>
+                                    )}
                                 </div>
                                 <button onClick={onLogout} className="bg-gray-50 hover:bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-[10px] font-bold transition-all border border-gray-100">Logout</button>
                             </div>
                         ) : (
-                            <button className="bg-[#1e40af] px-6 py-2 rounded-lg text-[10px] font-bold text-white hover:bg-blue-800 transition-all uppercase tracking-widest shadow-lg shadow-blue-50">Login</button>
+                            <div className="flex items-center gap-3">
+                                {/* Login Button */}
+                                <Link href="/login" className="bg-[#1e40af] px-6 py-2 rounded-lg text-[10px] font-bold text-white hover:bg-blue-800 transition-all uppercase tracking-widest shadow-lg shadow-blue-50">
+                                    Login
+                                </Link>
+                            </div>
                         )}
                     </div>
 
