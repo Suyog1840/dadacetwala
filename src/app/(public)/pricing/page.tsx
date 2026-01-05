@@ -63,9 +63,9 @@ export default function PricingPage() {
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> CAP Round Alerts</div>
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Community Access</div>
                         </div>
-                        <button className="w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                        <Link href="/enrollment?plan=basic&price=999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Start Basic
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Expert Plan (Recommended) */}
@@ -88,9 +88,9 @@ export default function PricingPage() {
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Choice Filling Review</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Unlimited Queries</div>
                         </div>
-                        <button className="w-full py-2.5 rounded-lg bg-[#1e40af] text-white text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-[#1e3a8a] shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1">
+                        <Link href="/enrollment?plan=expert&price=4999" className="block text-center w-full py-2.5 rounded-lg bg-[#1e40af] text-white text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-[#1e3a8a] shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1">
                             Get Premium Guidance
-                        </button>
+                        </Link>
                     </div>
 
                     {/* VIP Plan */}
@@ -110,9 +110,9 @@ export default function PricingPage() {
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> 24/7 Priority Hotline</div>
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> End-to-end Documentation</div>
                         </div>
-                        <button className="w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                        <Link href="/enrollment?plan=vip&price=14999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Go VIP
-                        </button>
+                        </Link>
                     </div>
 
                 </div>
