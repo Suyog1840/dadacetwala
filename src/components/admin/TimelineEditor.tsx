@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '../../../../components/ui/Button';
-import { Input } from '../../../../components/ui/Input';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Heading } from '../ui/Heading';
+import { Subheading } from '../ui/Subheading';
 
 interface TimelineStep {
     id: number;
@@ -28,10 +30,10 @@ export const TimelineEditor = () => {
         <div className="bg-white rounded-[1.5rem] p-8 shadow-xl border border-gray-100 w-fit max-w-[95vw] mx-auto overflow-hidden">
             {/* Header */}
             <div className="mb-6">
-                <h2 className="text-lg font-black text-[#020617] mb-1">Admission Journey Control</h2>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <Heading as="h3" className="mb-1">Admission Journey Control</Heading>
+                <Subheading>
                     Update live tracking status.
-                </p>
+                </Subheading>
             </div>
 
             {/* Steps List */}

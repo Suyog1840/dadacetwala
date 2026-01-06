@@ -1,12 +1,13 @@
 import React from 'react';
-import ProfileHeader from '../../../components/dashboard/ProfileHeader';
-import Timeline from '../../../components/dashboard/Timeline';
-import MentorCard from '../../../components/dashboard/MentorCard';
-import PredictorWidget from '../../../components/dashboard/PredictorWidget';
-import UpdateCard from '../../../components/dashboard/UpdateCard';
-import DashboardDocumentWidget from '../../../components/dashboard/DashboardDocumentWidget';
-import QuickLinkCard from '../../../components/dashboard/QuickLinkCard';
-import { Button } from '../../../components/ui/Button';
+import ProfileHeader from '../../components/dashboard/ProfileHeader';
+import Timeline from '../../components/dashboard/Timeline';
+import MentorCard from '../../components/dashboard/MentorCard';
+import PredictorWidget from '../../components/dashboard/PredictorWidget';
+import UpdateCard from '../../components/dashboard/UpdateCard';
+import DashboardDocumentWidget from '../../components/dashboard/DashboardDocumentWidget';
+import QuickLinkCard from '../../components/dashboard/QuickLinkCard';
+import { Button } from '../../components/ui/Button';
+import { Heading } from '../../components/ui/Heading';
 import Link from 'next/link';
 
 // Mock Data
@@ -62,7 +63,7 @@ const UPDATES = [
     }
 ];
 
-export default function DashboardPage() {
+export default function StudentPage() {
     return (
         <div className="space-y-6">
             {/* Top Section: Profile */}
@@ -95,7 +96,7 @@ export default function DashboardPage() {
                         <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                             🧭
                         </div>
-                        <h3 className="text-lg font-black text-[#020617] mb-2">Discovery Mode</h3>
+                        <Heading as="h3" className="mb-2">Discovery Mode</Heading>
                         <p className="text-xs font-medium text-gray-400 max-w-sm mx-auto">
                             Input your CET percentile above to explore colleges for 2024 admissions.
                         </p>

@@ -1,5 +1,7 @@
 import React from 'react';
-import { Button } from '../../../../components/ui/Button';
+import { Button } from '../ui/Button';
+import { Heading } from '../ui/Heading';
+import { Subheading } from '../ui/Subheading';
 
 export const DocVaultTab = () => {
     return (
@@ -10,10 +12,10 @@ export const DocVaultTab = () => {
                 <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 text-2xl shadow-sm filter drop-shadow-sm">
                     📂
                 </div>
-                <h2 className="text-lg font-black text-[#020617] mb-2">Preference List Dispatch</h2>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest max-w-xs mx-auto leading-relaxed mb-6">
+                <Heading as="h3" className="mb-2">Preference List Dispatch</Heading>
+                <Subheading className="max-w-xs mx-auto leading-relaxed mb-6 text-gray-500">
                     Instantly push custom preference lists.
-                </p>
+                </Subheading>
                 <Button className="w-full max-w-xs bg-[#1e40af] hover:bg-[#1e3a8a] py-3 rounded-xl text-[10px] font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest">
                     Select PDF Document
                 </Button>
@@ -21,7 +23,7 @@ export const DocVaultTab = () => {
 
             {/* Bulk Mentor Allocation */}
             <div className="bg-white rounded-[1.5rem] p-8 shadow-xl border border-gray-100 min-h-[250px] flex flex-col justify-center">
-                <h2 className="text-lg font-black text-[#020617] mb-6">Bulk Mentor Allocation</h2>
+                <Heading as="h3" className="mb-6">Bulk Mentor Allocation</Heading>
 
                 <div className="space-y-4">
                     <div className="relative">

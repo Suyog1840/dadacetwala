@@ -2,11 +2,11 @@
 
 import React, { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Navbar from '../../../components/layout/Navbar';
-import Footer from '../../../components/layout/Footer';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
-import { Button } from '../../../components/ui/Button';
+import Navbar from '../../components/layout/Navbar';
+import Footer from '../../components/layout/Footer';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { Button } from '../../components/ui/Button';
 
 // Enrollment Flow Component
 function EnrollmentFlow() {
@@ -63,7 +63,7 @@ function EnrollmentFlow() {
         // Simulate Account Creation & Redirect
         setTimeout(() => {
             // Navigate to dashboard or login
-            router.push('/dashboard'); // Change to actual dashboard route
+            router.push('/student'); // Change to actual dashboard route
             setIsLoading(false);
         }, 1000);
     };

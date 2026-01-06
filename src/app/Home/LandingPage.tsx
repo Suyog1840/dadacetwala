@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import Navbar from '../../../components/layout/Navbar';
-import Footer from '../../../components/layout/Footer';
-import { User } from '../../../types';
-import { WhyChooseUs } from '../../../components/features/WhyChooseUs';
-import { SmartPredictor } from '../../../components/features/SmartPredictor';
-import { ServiceCard } from '../../../components/features/ServiceCard';
-import { Achievements } from '../../../components/features/Achievements';
-import { FAQ } from '../../../components/features/FAQ';
-import { PremiereResources } from '../../../components/features/PremiereResources';
+import Navbar from '../../components/layout/Navbar';
+import Footer from '../../components/layout/Footer';
+import { User } from '../../types';
+import { WhyChooseUs } from '../../components/features/WhyChooseUs';
+import { SmartPredictor } from '../../components/features/SmartPredictor';
+import { ServiceCard } from '../../components/features/ServiceCard';
+import { Achievements } from '../../components/features/Achievements';
+import { FAQ } from '../../components/features/FAQ';
+import { PremiereResources } from '../../components/features/PremiereResources';
 
 interface LandingPageProps {
     user?: User | null;

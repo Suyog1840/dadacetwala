@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '../../../../components/ui/Button';
-import { Input } from '../../../../components/ui/Input';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Heading } from '../ui/Heading';
+import { Subheading } from '../ui/Subheading';
 
 interface Broadcast {
     id: number;
@@ -23,7 +25,7 @@ export const BroadcastsTab = () => {
 
             {/* Create Broadcast Form */}
             <div className="lg:col-span-1 bg-white rounded-[1.5rem] p-6 shadow-xl border border-gray-100 h-fit">
-                <h2 className="text-lg font-black text-[#020617] mb-4">Create Broadcast</h2>
+                <Heading as="h3" className="mb-4">Create Broadcast</Heading>
 
                 <form className="space-y-3">
                     <div>
@@ -66,7 +68,7 @@ export const BroadcastsTab = () => {
             {/* Notice History */}
             <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between px-2">
-                    <h3 className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Recent Broadcasts</h3>
+                    <Subheading>Recent Broadcasts</Subheading>
                 </div>
 
                 <div className="space-y-3">
