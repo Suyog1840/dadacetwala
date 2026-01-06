@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Heading } from '../../components/ui/Heading';
+import { Subheading } from '../../components/ui/Subheading';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<'password' | 'otp'>('password');
@@ -18,12 +20,12 @@ export default function LoginPage() {
 
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-black text-[#020617] mb-2 tracking-tight">
+        <Heading as="h1" className="mb-2">
           Welcome Back
-        </h1>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        </Heading>
+        <Subheading>
           Login to your counseling portal
-        </p>
+        </Subheading>
       </div>
 
       {/* Login Card */}
@@ -99,7 +101,7 @@ export default function LoginPage() {
 
           {/* Sign In Button */}
           <div className="pt-2">
-            <Link href="/?login=true" className="block w-full">
+            <Link href="/student" className="block w-full">
               <Button className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3.5 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest">
                 Sign In
               </Button>
@@ -109,12 +111,12 @@ export default function LoginPage() {
 
         {/* Footer Register Link */}
         <div className="mt-8 text-center">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <Subheading className="text-center">
             Don't have an account?{' '}
-            <Link href="/register" className="text-[#1e40af] hover:text-[#1e3a8a] ml-1">
+            <Link href="/register" className="text-[#1e40af] hover:text-[#1e3a8a] ml-1 normal-case tracking-normal">
               Register Now
             </Link>
-          </p>
+          </Subheading>
         </div>
 
       </div>

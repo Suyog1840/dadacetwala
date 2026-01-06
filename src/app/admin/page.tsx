@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import Navbar from '../../../components/layout/Navbar';
-import { Button } from '../../../components/ui/Button';
+import Navbar from '../../components/layout/Navbar';
+import { Button } from '../../components/ui/Button';
+import { Heading } from '../../components/ui/Heading';
+import { Subheading } from '../../components/ui/Subheading';
 
-import { TimelineEditor } from './components/TimelineEditor';
-import { BroadcastsTab } from './components/BroadcastsTab';
-import { EnrollmentsTab } from './components/EnrollmentsTab';
-import { DocVaultTab } from './components/DocVaultTab';
+import { TimelineEditor } from '../../components/admin/TimelineEditor';
+import { BroadcastsTab } from '../../components/admin/BroadcastsTab';
+import { EnrollmentsTab } from '../../components/admin/EnrollmentsTab';
+import { DocVaultTab } from '../../components/admin/DocVaultTab';
 
 export default function AdminPage() {
     const [activeTab, setActiveTab] = useState<'broadcasts' | 'enrollments' | 'docs' | 'timeline'>('timeline');
@@ -31,8 +33,8 @@ export default function AdminPage() {
                                 A
                             </div>
                             <div>
-                                <h1 className="text-lg font-black text-[#020617] leading-tight">System Admin</h1>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Control Terminal</p>
+                                <Heading as="h1" className="text-lg leading-tight">System Admin</Heading>
+                                <Subheading>Control Terminal</Subheading>
                             </div>
                         </div>
                         <Button className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/20">

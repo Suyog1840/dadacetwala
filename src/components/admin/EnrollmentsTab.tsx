@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '../../../../components/ui/Button';
+import { Button } from '../ui/Button';
+import { Heading } from '../ui/Heading';
+import { Subheading } from '../ui/Subheading';
 
 interface Student {
     id: number;
@@ -23,10 +25,10 @@ export const EnrollmentsTab = () => {
             {/* Header & Limits */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className="text-lg font-black text-[#020617] mb-0.5">Enrolled Students</h2>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                    <Heading as="h3" className="mb-0.5">Enrolled Students</Heading>
+                    <Subheading className="text-[9px]">
                         Manage enrollments and mentor assignments.
-                    </p>
+                    </Subheading>
                 </div>
                 <div className="flex gap-2">
                     <div className="relative">

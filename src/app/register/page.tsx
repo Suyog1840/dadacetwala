@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Heading } from '../../components/ui/Heading';
+import { Subheading } from '../../components/ui/Subheading';
 
 export default function RegisterPage() {
     return (
@@ -16,12 +18,10 @@ export default function RegisterPage() {
 
             {/* Header */}
             <div className="text-center mb-8">
-                <h1 className="text-2xl font-black text-[#020617] mb-2 tracking-tight">
-                    Create Account
-                </h1>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <Heading as="h1" className="mb-2">Create Account</Heading>
+                <Subheading>
                     Unlock powerful list of colleges
-                </p>
+                </Subheading>
             </div>
 
             {/* Register Card */}
@@ -93,12 +93,12 @@ export default function RegisterPage() {
 
                 {/* Footer Login Link */}
                 <div className="mt-8 text-center">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <Subheading className="text-center">
                         Already have an account?{' '}
-                        <Link href="/login" className="text-[#1e40af] hover:text-[#1e3a8a] ml-1">
+                        <Link href="/login" className="text-[#1e40af] hover:text-[#1e3a8a] ml-1 normal-case tracking-normal">
                             Sign In
                         </Link>
-                    </p>
+                    </Subheading>
                 </div>
 
             </div>

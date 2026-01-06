@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from '../ui/Button';
+import { Heading } from '../ui/Heading';
+import { Subheading } from '../ui/Subheading';
 
 interface ProfileHeaderProps {
     name: string;
@@ -16,13 +18,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, appId, isEnrolled }
                     <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
                 <div>
-                    <h1 className="text-lg md:text-xl font-black text-[#020617] mb-0.5">
+                    <Heading as="h2" className="mb-0.5 text-lg md:text-xl">
                         Admission Portal: {name}
-                    </h1>
+                    </Heading>
                     <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                        <Subheading>
                             APP ID: {appId}
-                        </span>
+                        </Subheading>
                         {isEnrolled && (
                             <span className="bg-blue-50 text-[#1e40af] text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                                 Premium Enrolled
