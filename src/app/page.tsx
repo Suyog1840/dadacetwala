@@ -2,7 +2,7 @@
 
 import React from 'react';
 import LandingPage from './Home/LandingPage';
-import { User } from '../types';
+import { User } from '@/types';
 
 export default function Home() {
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;

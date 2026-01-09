@@ -1,5 +1,6 @@
 'use client';
 
+
 import React, { useEffect, useState } from 'react';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
 import Timeline from '@/components/dashboard/Timeline';
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/Button';
 import { Heading } from '@/components/ui/Heading';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-
 
 // Mock Data (Hardcoded as requested)
 const STUDENT_DATA = {
