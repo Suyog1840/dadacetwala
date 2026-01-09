@@ -1,18 +1,4 @@
-<<<<<<<< HEAD:src/app/student/page.tsx
-import React from 'react';
-import ProfileHeader from '../../components/dashboard/ProfileHeader';
-import Timeline from '../../components/dashboard/Timeline';
-import MentorCard from '../../components/dashboard/MentorCard';
-import PredictorWidget from '../../components/dashboard/PredictorWidget';
-import UpdateCard from '../../components/dashboard/UpdateCard';
-import DashboardDocumentWidget from '../../components/dashboard/DashboardDocumentWidget';
-import QuickLinkCard from '../../components/dashboard/QuickLinkCard';
-import { Button } from '../../components/ui/Button';
-import { Heading } from '../../components/ui/Heading';
-import Link from 'next/link';
-========
 'use client';
->>>>>>>> 2c89e4b (signup 1.0):src/app/student/dashboard/page.tsx
 
 import React, { useEffect, useState } from 'react';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
@@ -23,8 +9,10 @@ import UpdateCard from '@/components/dashboard/UpdateCard';
 import DashboardDocumentWidget from '@/components/dashboard/DashboardDocumentWidget';
 import QuickLinkCard from '@/components/dashboard/QuickLinkCard';
 import { Button } from '@/components/ui/Button';
+import { Heading } from '@/components/ui/Heading';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+
 
 // Mock Data (Hardcoded as requested)
 const STUDENT_DATA = {
@@ -79,9 +67,6 @@ const UPDATES = [
     }
 ];
 
-<<<<<<<< HEAD:src/app/student/page.tsx
-export default function StudentPage() {
-========
 export default function StudentDashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [studentData, setStudentData] = useState({
@@ -128,7 +113,7 @@ export default function StudentDashboardPage() {
         return <div className="p-8 text-center font-bold">Loading Dashboard...</div>;
     }
 
->>>>>>>> 2c89e4b (signup 1.0):src/app/student/dashboard/page.tsx
+
     return (
         <div className="space-y-6">
             {/* DEBUG MARKER */}
