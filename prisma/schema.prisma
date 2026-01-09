@@ -16,17 +16,22 @@ datasource db {
 model User {
   id              String   @id @default(uuid())
   authProviderId  String
-  userName        String
+
+  userName        String?      // set after payment
   email           String   @unique
   contact         String?
-  role            String   // student | mentor | admin | super_admin
-  status          String
+
+  role            String       // student | mentor | admin | super_admin
+  status          String?      // active / inactive / blocked (later)
+
   isEnrolled      Boolean  @default(false)
+  isRegistered    Boolean  @default(false)
+
   enrolledAt      DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  // Relations (we will define models later)
+  // Relations
   studentProfile  StudentProfile?
   mentorProfile   MentorProfile?
   adminProfile    AdminProfile?
@@ -35,12 +40,16 @@ model User {
 }
 
 
+
 model StudentProfile {
   id                  String   @id @default(uuid())
   userId              String   @unique
 
   examType            String
   cetPercentile       Float?    // ✅ nullable
+  jeePercentile       Float?    // ✅ nullable
+  pcbPercentile       Float?    // ✅ nullable
+  diplomaPercentage   Float?    // ✅ nullable
   rank                Int?      // ✅ nullable
   category            String
   domicileState       String
@@ -48,7 +57,6 @@ model StudentProfile {
 
   isCounselingActive  Boolean  @default(false)
   plan                String
-  preferredUniversity String
 
   createdAt           DateTime @default(now())
 

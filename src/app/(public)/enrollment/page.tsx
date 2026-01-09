@@ -2,11 +2,12 @@
 
 import React, { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Navbar from '../../../components/layout/Navbar';
-import Footer from '../../../components/layout/Footer';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
-import { Button } from '../../../components/ui/Button';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
+import { supabase } from '@/lib/supabaseClient';
 
 // Enrollment Flow Component
 function EnrollmentFlow() {
@@ -17,6 +18,8 @@ function EnrollmentFlow() {
 
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
+    const [currentTempPassword, setCurrentTempPassword] = useState<string | null>(null);
 
     // Form States
     const [formData, setFormData] = useState({
@@ -40,41 +43,219 @@ function EnrollmentFlow() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleNext = () => {
+    const handleNext = async () => {
+        if (!formData.email || !formData.fullName || !formData.contactNumber) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
         setIsLoading(true);
-        // Simulate API call/processing
-        setTimeout(() => {
-            setStep(prev => prev + 1);
+
+        try {
+            // 1️⃣ Create auth user with TEMP password
+            // Generating a random password that meets basic complexity
+            const tempPassword = `Temp@${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 10)}`;
+
+            const { data, error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: tempPassword,
+            });
+
+            if (error || !data.user) {
+                console.error('Signup error:', error);
+                alert(`Failed to create account: ${error?.message || 'Unknown error'}`);
+                return;
+            }
+
+            const userId = data.user.id;
+            setRegisteredUserId(userId);
+            setCurrentTempPassword(tempPassword);
+
+            // 2️⃣ Insert into User table (Prisma model)
+            const { error: userError } = await supabase.from('User').insert({
+                id: userId,
+                authProviderId: userId,
+                userName: formData.email.split('@')[0], // Default username
+                email: formData.email,
+                contact: formData.contactNumber,
+                role: 'student',
+                isRegistered: true,
+                isEnrolled: false,
+                status: 'active',
+                updatedAt: new Date()
+            });
+
+            if (userError) {
+                console.error('User table error:', userError);
+                alert(`Failed to save user data: ${userError.message}`);
+                return;
+            }
+
+            // 3️⃣ Insert StudentProfile (Prisma model)
+            const { error: profileError } = await supabase.from('StudentProfile').insert({
+                id: crypto.randomUUID(),
+                userId: userId,
+                examType: formData.academicStream,
+                category: formData.gender,
+                homeUniversity: formData.homeUniversity,
+                domicileState: 'Maharashtra',
+                cetPercentile: parseFloat(formData.mhtcet) || null,
+                jeePercentile: parseFloat(formData.jee) || null,
+                isCounselingActive: false,
+                plan: plan
+            });
+
+            if (profileError) {
+                console.error('Profile error:', profileError);
+                alert(`Failed to save student profile: ${profileError.message}`);
+                return;
+            }
+
+            // 4️⃣ Move to payment step
+            setStep(2);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            alert('An unexpected error occurred. Please try again.');
+        } finally {
             setIsLoading(false);
-        }, 800);
+        }
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         setIsLoading(true);
-        // Simulate Payment Processing
-        setTimeout(() => {
-            setStep(prev => prev + 1);
+
+        try {
+            // Use local state if session is not available
+            let userId = registeredUserId;
+
+            if (!userId) {
+                const { data: sessionData } = await supabase.auth.getUser();
+                userId = sessionData.user?.id || null;
+            }
+
+            if (!userId) {
+                alert('User registration not found. Please try Step 1 again.');
+                setStep(1);
+                return;
+            }
+
+            // Mark payment success in Payment table (Prisma model)
+            const { error: paymentError } = await supabase.from('Payment').insert({
+                id: crypto.randomUUID(),
+                userId: userId,
+                amount: Number(price),
+                currency: 'INR',
+                paymentStatus: 'SUCCESS',
+                transactionId: `TXN_${Date.now()}`,
+                paidAt: new Date()
+            });
+
+            if (paymentError) {
+                console.error('Payment error:', paymentError);
+                alert(`Payment recording failed: ${paymentError.message}`);
+                return;
+            }
+
+            // Mark user as enrolled in User table
+            const { error: userUpdateError } = await supabase
+                .from('User')
+                .update({
+                    isEnrolled: true,
+                    enrolledAt: new Date(),
+                    updatedAt: new Date()
+                })
+                .eq('id', userId);
+
+            if (userUpdateError) {
+                console.error('User update error:', userUpdateError);
+                alert(`Failed to update enrollment status: ${userUpdateError.message}`);
+                return;
+            }
+
+            setStep(3);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            alert('An unexpected error occurred during payment processing.');
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
+        if (!formData.password || formData.password !== formData.confirmPassword) {
+            alert('Passwords do not match or are empty');
+            return;
+        }
+
         setIsLoading(true);
-        // Simulate Account Creation & Redirect
-        setTimeout(() => {
-            // Navigate to dashboard or login
-            router.push('/dashboard'); // Change to actual dashboard route
+
+        try {
+            // Ensure we have a session. If not, try to sign in with temp password
+            const { data: sessionInfo } = await supabase.auth.getSession();
+
+            if (!sessionInfo.session && currentTempPassword && formData.email) {
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: currentTempPassword
+                });
+
+                if (signInError) {
+                    console.error('Sign-in with temp password failed:', signInError);
+
+                    if (signInError.message.toLowerCase().includes('email not confirmed')) {
+                        alert(`DadaCETWala Error: Email confirmation is enabled in your Supabase project. 
+                        
+To allow setting a password immediately, please go to your Supabase Dashboard -> Authentication -> Providers -> Email and DISABLE "Confirm email". 
+
+Alternatively, check your email to confirm the account before finishing this setup.`);
+                    } else {
+                        alert(`Session expired. Please try to log in again or contact support: ${signInError.message}`);
+                    }
+                    return;
+                }
+            }
+
+            // Update password from temp to user-chosen one
+            const { error: authError } = await supabase.auth.updateUser({
+                password: formData.password,
+            });
+
+            if (authError) {
+                console.error('Password update error:', authError);
+                alert(`Failed to set password: ${authError.message}`);
+                return;
+            }
+
+            // Save permanent username if provided
+            const { data: userData } = await supabase.auth.getUser();
+            const userId = userData.user?.id;
+
+            if (userId && formData.username) {
+                await supabase
+                    .from('User')
+                    .update({
+                        userName: formData.username,
+                        updatedAt: new Date()
+                    })
+                    .eq('id', userId);
+            }
+
+            router.push('/student/dashboard');
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            alert('An unexpected error occurred while finishing setup.');
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     // Helper to get Plan Name
     const getPlanName = () => {
-        switch (plan) {
+        switch (plan.toLowerCase()) {
             case 'basic': return 'Basic Access';
             case 'expert': return 'Expert Counseling';
             case 'vip': return 'VIP Direct';
-            default: return 'Selected Plan';
+            default: return plan.charAt(0).toUpperCase() + plan.slice(1);
         }
     };
 
@@ -118,7 +299,6 @@ function EnrollmentFlow() {
         return (
             <div className="max-w-3xl mx-auto">
                 <StepIndicator />
-                {/* Back / Change Plan */}
                 <div className="mb-2 text-left">
                     <button
                         onClick={() => router.push('/pricing')}
@@ -130,7 +310,6 @@ function EnrollmentFlow() {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in relative">
-                    {/* Header */}
                     <div className="pt-4 px-6 text-center border-b border-gray-50 pb-2">
                         <div className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#1e40af] rounded-full text-[8px] font-black uppercase tracking-widest mb-1">
                             Selected Plan: {getPlanName()}
@@ -144,7 +323,6 @@ function EnrollmentFlow() {
                     </div>
 
                     <div className="px-6 py-6 space-y-3">
-                        {/* Row 1: Basic Info - 3 Cols */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <Input
                                 label="Student Full Name"
@@ -173,7 +351,6 @@ function EnrollmentFlow() {
                             />
                         </div>
 
-                        {/* Row 2: Academic & Personal - 3 Cols */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <Select
                                 label="Academic Stream"
@@ -213,7 +390,6 @@ function EnrollmentFlow() {
                             />
                         </div>
 
-                        {/* Row 3: Income - 3 Cols constrained */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="md:col-span-1">
                                 <Input
@@ -227,7 +403,6 @@ function EnrollmentFlow() {
                             </div>
                         </div>
 
-                        {/* Score Details divider */}
                         <div className="border-t border-gray-100 pt-4 mt-1">
                             <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">
                                 Score Details (Optional)
@@ -282,7 +457,6 @@ function EnrollmentFlow() {
             <div className="max-w-md mx-auto">
                 <StepIndicator />
                 <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in relative">
-                    {/* Header Section */}
                     <div className="bg-[#1e40af] p-4 text-white text-center rounded-b-2xl relative z-10">
                         <div className="flex justify-between items-center mb-3">
                             <span className="text-[9px] font-black uppercase tracking-widest opacity-80">Payment Gateway</span>
@@ -296,7 +470,6 @@ function EnrollmentFlow() {
 
                     <div className="px-5 py-5">
                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Select Payment Method</p>
-
                         <div className="grid grid-cols-2 gap-2 mb-4">
                             {['UPI', 'CARD', 'NETBANKING', 'WALLET'].map((method) => (
                                 <button
@@ -317,7 +490,7 @@ function EnrollmentFlow() {
                         <div className="bg-gray-50 rounded-lg p-3 mb-4">
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[10px] font-bold text-gray-500">Transaction ID</span>
-                                <span className="text-[10px] font-black text-[#020617]">#TXN_9423812</span>
+                                <span className="text-[10px] font-black text-[#020617]">#TXN_{Date.now().toString().slice(-8)}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-[10px] font-bold text-gray-500">Convenience Fee</span>
@@ -341,11 +514,6 @@ function EnrollmentFlow() {
                             >
                                 Cancel
                             </button>
-                        </div>
-
-                        <div className="flex justify-center items-center mt-4 space-x-2 opacity-50">
-                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Secured by</span>
-                            <div className="w-6 h-1.5 bg-gray-300 rounded-full"></div>
                         </div>
                     </div>
                 </div>
@@ -411,7 +579,7 @@ function EnrollmentFlow() {
                     </div>
 
                     <div className="mt-5 text-[8px] font-bold text-gray-300 uppercase tracking-wider leading-relaxed">
-                        Welcome to the Dadacetwala Family<br />cscsc@gmail.com
+                        Welcome to the Dadacetwala Family<br />{formData.email}
                     </div>
                 </div>
             </div>

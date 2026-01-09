@@ -2,11 +2,70 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'password' | 'otp'>('password');
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    identifier: '', // email or username
+    password: '',
+    otp: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (activeTab === 'password') {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.identifier,
+          password: formData.password,
+        });
+
+        if (error) {
+          alert(`Login failed: ${error.message}`);
+          return;
+        }
+
+        if (data.user) {
+          // Check role from User table
+          const { data: dbUser, error: dbError } = await supabase
+            .from('User')
+            .select('role')
+            .eq('id', data.user.id)
+            .single();
+
+          if (dbError) {
+            console.error('Error fetching user profile:', dbError);
+          }
+
+          if (dbUser?.role === 'admin' || dbUser?.role === 'super_admin') {
+            router.push('/admin/dashboard');
+          } else {
+            router.push('/student/dashboard');
+          }
+        }
+      } else {
+        alert('OTP login is not fully implemented yet. Please use password login.');
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -51,15 +110,20 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleLogin}>
           {/* Username */}
           <div>
             <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
-              Username or Email
+              Email Address
             </label>
             <Input
-              placeholder="e.g. rahul_cet"
+              name="identifier"
+              type="email"
+              value={formData.identifier}
+              onChange={handleInputChange}
+              placeholder="e.g. rahul@example.com"
               className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
+              required
             />
           </div>
 
@@ -75,9 +139,13 @@ export default function LoginPage() {
                 </Link>
               </div>
               <Input
+                name="password"
                 type="password"
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="••••••••"
                 className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
+                required
               />
             </div>
           ) : (
@@ -87,10 +155,13 @@ export default function LoginPage() {
               </label>
               <div className="flex gap-2">
                 <Input
+                  name="otp"
+                  value={formData.otp}
+                  onChange={handleInputChange}
                   placeholder="123456"
                   className="bg-gray-50 border-gray-100 focus:bg-white text-center tracking-[0.5em] font-bold text-lg py-3"
                 />
-                <Button variant="outline" className="text-[10px] px-4">
+                <Button variant="outline" className="text-[10px] px-4" type="button">
                   Send
                 </Button>
               </div>
@@ -99,11 +170,13 @@ export default function LoginPage() {
 
           {/* Sign In Button */}
           <div className="pt-2">
-            <Link href="/?login=true" className="block w-full">
-              <Button className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3.5 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest">
-                Sign In
-              </Button>
-            </Link>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3.5 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest"
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
           </div>
         </form>
 

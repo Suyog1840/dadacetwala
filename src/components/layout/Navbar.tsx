@@ -1,16 +1,54 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User } from "../types";
+import { supabase } from "@/lib/supabaseClient";
 
 interface NavbarProps {
     user: User | null;
     onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
+    const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(initialUser);
+
+    useEffect(() => {
+        // If initialUser is provided, use it. Otherwise fetch.
+        if (initialUser) {
+            setUser(initialUser);
+            return;
+        }
+
+        const getUser = async () => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                // Fetch name from User table
+                const { data: dbUser } = await supabase
+                    .from('User')
+                    .select('userName, role')
+                    .eq('id', authUser.id)
+                    .single();
+
+                setUser({
+                    name: dbUser?.userName || authUser.email?.split('@')[0] || 'User',
+                    email: authUser.email || '',
+                    role: (dbUser?.role as any) || 'unenrolled'
+                });
+            }
+        };
+        getUser();
+    }, [initialUser]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        if (onLogout) onLogout();
+        router.push('/');
+    };
 
     return (
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -58,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                                         <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest border border-blue-100 bg-blue-50 px-1.5 py-0.5 rounded">Unenrolled</span>
                                     )}
                                 </div>
-                                <button onClick={onLogout} className="bg-gray-50 hover:bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-[10px] font-bold transition-all border border-gray-100">Logout</button>
+                                <button onClick={handleLogout} className="bg-gray-50 hover:bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-[10px] font-bold transition-all border border-gray-100">Logout</button>
                             </div>
                         ) : (
                             <div className="flex items-center gap-3">
@@ -126,7 +164,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                     </a>
 
                     {user && (
-                        <button onClick={onLogout} className="mt-2 w-full text-center bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold border border-gray-100">
+                        <button onClick={handleLogout} className="mt-2 w-full text-center bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold border border-gray-100">
                             Logout
                         </button>
                     )}

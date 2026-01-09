@@ -1,18 +1,21 @@
-import React from 'react';
-import ProfileHeader from '../../../components/dashboard/ProfileHeader';
-import Timeline from '../../../components/dashboard/Timeline';
-import MentorCard from '../../../components/dashboard/MentorCard';
-import PredictorWidget from '../../../components/dashboard/PredictorWidget';
-import UpdateCard from '../../../components/dashboard/UpdateCard';
-import DashboardDocumentWidget from '../../../components/dashboard/DashboardDocumentWidget';
-import QuickLinkCard from '../../../components/dashboard/QuickLinkCard';
-import { Button } from '../../../components/ui/Button';
-import Link from 'next/link';
+'use client';
 
-// Mock Data
+import React, { useEffect, useState } from 'react';
+import ProfileHeader from '@/components/dashboard/ProfileHeader';
+import Timeline from '@/components/dashboard/Timeline';
+import MentorCard from '@/components/dashboard/MentorCard';
+import PredictorWidget from '@/components/dashboard/PredictorWidget';
+import UpdateCard from '@/components/dashboard/UpdateCard';
+import DashboardDocumentWidget from '@/components/dashboard/DashboardDocumentWidget';
+import QuickLinkCard from '@/components/dashboard/QuickLinkCard';
+import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
+
+// Mock Data (Hardcoded as requested)
 const STUDENT_DATA = {
     name: 'Siddharth Malhotra',
-    appId: '#CET2024-1',
+    appId: '#CET2024-4N5RZX18W',
     isEnrolled: true
 };
 
@@ -62,35 +65,75 @@ const UPDATES = [
     }
 ];
 
-export default function DashboardPage() {
+export default function StudentDashboardPage() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [studentData, setStudentData] = useState({
+        name: STUDENT_DATA.name,
+        appId: STUDENT_DATA.appId,
+        isEnrolled: STUDENT_DATA.isEnrolled
+    });
+
+    useEffect(() => {
+        console.log("Dashboard mounted");
+        const fetchUserData = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    console.log("No user found, showing mock data");
+                    setIsLoading(false);
+                    return;
+                }
+
+                const { data: dbUser } = await supabase
+                    .from('User')
+                    .select('userName, isEnrolled')
+                    .eq('id', user.id)
+                    .single();
+
+                if (dbUser) {
+                    setStudentData(prev => ({
+                        ...prev,
+                        name: dbUser.userName || user.email?.split('@')[0] || prev.name,
+                        isEnrolled: dbUser.isEnrolled ?? prev.isEnrolled
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    if (isLoading) {
+        return <div className="p-8 text-center font-bold">Loading Dashboard...</div>;
+    }
+
     return (
         <div className="space-y-6">
-            {/* Top Section: Profile */}
+            {/* DEBUG MARKER */}
+            <div className="hidden">Dashboard Content Rendering</div>
+
             <ProfileHeader
-                name={STUDENT_DATA.name}
-                appId={STUDENT_DATA.appId}
-                isEnrolled={STUDENT_DATA.isEnrolled}
+                name={studentData.name}
+                appId={studentData.appId}
+                isEnrolled={studentData.isEnrolled}
             />
 
-            {/* Mobile-Only Timeline (Visible only on small screens) */}
             <div className="lg:hidden mb-6">
                 <Timeline steps={TIMELINE_STEPS} />
             </div>
 
-            {/* Main Grid Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Left Column (2 cols wide) - Order 3 on Mobile, Order 1 on Desktop */}
                 <div className="lg:col-span-2 space-y-6 order-3 lg:order-1">
-                    {/* Desktop-Only Timeline (Visible only on large screens) */}
                     <div className="hidden lg:block">
                         <Timeline steps={TIMELINE_STEPS} />
                     </div>
 
-                    {/* Smart Predictor */}
                     <PredictorWidget />
 
-                    {/* Discovery Mode */}
                     <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 text-center animate-fade-in border-dashed">
                         <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                             🧭
@@ -101,7 +144,6 @@ export default function DashboardPage() {
                         </p>
                     </div>
 
-                    {/* Quick Access Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <QuickLinkCard
                             icon="🏛️"
@@ -113,7 +155,7 @@ export default function DashboardPage() {
                             title="Fees Structure"
                             subtitle="Detailed tuition & fees breakdown."
                         />
-                        <Link href="/documents" className="block h-full">
+                        <Link href="/student/documents" className="block h-full">
                             <QuickLinkCard
                                 icon="📁"
                                 title="Documents"
@@ -123,18 +165,12 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Right Column (Sidebar - 1 col wide) - Order 2 on Mobile, Order 2 on Desktop */}
                 <div className="lg:col-span-1 space-y-4 order-2 lg:order-2">
-                    {/* Institutional Updates */}
                     <UpdateCard updates={UPDATES} />
-
-                    {/* Mentor Card */}
                     <MentorCard
-                        name="Dr. Vinay Deshmukh"
+                        name="Dada Counselor Team"
                         role="Academic Strategist"
                     />
-
-                    {/* Personalized Document Checklist Widget */}
                     <DashboardDocumentWidget />
                 </div>
             </div>
