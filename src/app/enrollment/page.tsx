@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -28,6 +29,7 @@ function EnrollmentFlow() {
         academicStream: 'Engineering',
         homeUniversity: 'Mumbai University (MU)',
         gender: 'Male',
+        category: 'Open', // New category field
         email: '',
         familyIncome: '',
         mhtcet: '',
@@ -95,8 +97,9 @@ function EnrollmentFlow() {
             const { error: profileError } = await supabase.from('StudentProfile').insert({
                 id: crypto.randomUUID(),
                 userId: userId,
+                name: formData.fullName, // Save student's full name for verification
                 examType: formData.academicStream,
-                category: formData.gender,
+                category: formData.category, // Save the selected category
                 homeUniversity: formData.homeUniversity,
                 domicileState: 'Maharashtra',
                 cetPercentile: parseFloat(formData.mhtcet) || null,
@@ -385,6 +388,27 @@ Alternatively, check your email to confirm the account before finishing this set
                                     { label: 'OTHER', value: 'Other' },
                                 ]}
                                 value={formData.gender}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <Dropdown
+                                label="Category"
+                                name="category"
+                                options={[
+                                    { label: 'OPEN', value: 'Open' },
+                                    { label: 'NT', value: 'NT' },
+                                    { label: 'VJ', value: 'VJ' },
+                                    { label: 'SC', value: 'SC' },
+                                    { label: 'ST', value: 'ST' },
+                                    { label: 'OBC', value: 'OBC' },
+                                    { label: 'SBC', value: 'SBC' },
+                                    { label: 'EWS', value: 'EWS' },
+
+                                ]}
+                                value={formData.category}
                                 onChange={handleInputChange}
                                 required
                             />
