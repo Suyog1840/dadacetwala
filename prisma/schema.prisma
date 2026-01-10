@@ -44,6 +44,7 @@ model User {
 model StudentProfile {
   id                  String   @id @default(uuid())
   userId              String   @unique
+  name                String?  // Student's full name for verification (optional for existing records)
 
   examType            String
   cetPercentile       Float?    // ✅ nullable

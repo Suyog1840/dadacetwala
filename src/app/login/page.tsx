@@ -13,6 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'password' | 'otp'>('password');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     identifier: '', // email or username
     password: '',
@@ -24,19 +25,61 @@ export default function LoginPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Helper function to check if input is an email
+  const isEmail = (input: string): boolean => {
+    return input.includes('@');
+  };
+
+  // Helper function to get email from username
+  const getUserEmailByUsername = async (username: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('User')
+        .select('email')
+        .eq('userName', username)
+        .single();
+
+      if (error || !data) {
+        return null;
+      }
+
+      return data.email;
+    } catch (err) {
+      console.error('Error looking up username:', err);
+      return null;
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       if (activeTab === 'password') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.identifier,
+        // Step 1: Determine if input is email or username
+        let emailToUse = formData.identifier;
+
+        if (!isEmail(formData.identifier)) {
+          // It's a username - look up the email
+          const lookedUpEmail = await getUserEmailByUsername(formData.identifier);
+
+          if (!lookedUpEmail) {
+            setError('Username not found. Please check your username or use your email to login.');
+            return;
+          }
+
+          emailToUse = lookedUpEmail;
+        }
+
+        // Step 2: Authenticate with Supabase using email
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: emailToUse,
           password: formData.password,
         });
 
-        if (error) {
-          alert(`Login failed: ${error.message}`);
+        if (authError) {
+          setError(authError.message);
           return;
         }
 
@@ -59,11 +102,11 @@ export default function LoginPage() {
           }
         }
       } else {
-        alert('OTP login is not fully implemented yet. Please use password login.');
+        setError('OTP login is not fully implemented yet. Please use password login.');
       }
     } catch (err) {
       console.error('Unexpected error:', err);
-      alert('An unexpected error occurred.');
+      setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -113,17 +156,24 @@ export default function LoginPage() {
         </div>
 
         <form className="space-y-5" onSubmit={handleLogin}>
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 text-red-600 text-[10px] font-bold p-3 rounded-xl border border-red-100 animate-shake">
+              {error}
+            </div>
+          )}
+
           {/* Username */}
           <div>
             <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
-              Email Address
+              Email Address or Username
             </label>
             <Input
               name="identifier"
-              type="email"
+              type="text"
               value={formData.identifier}
               onChange={handleInputChange}
-              placeholder="e.g. rahul@example.com"
+              placeholder="Email or Username"
               className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
               required
             />

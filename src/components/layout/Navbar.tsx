@@ -90,12 +90,15 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
 
                         {user ? (
                             <div className="flex items-center gap-5">
-                                <div className="flex flex-col items-end">
+                                <Link
+                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin/dashboard' : '/student/dashboard'}
+                                    className="flex flex-col items-end hover:opacity-80 transition-opacity cursor-pointer"
+                                >
                                     <span className="text-xs font-bold text-[#02042b]">{user.name}</span>
                                     {user.role === 'unenrolled' && (
                                         <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest border border-blue-100 bg-blue-50 px-1.5 py-0.5 rounded">Unenrolled</span>
                                     )}
-                                </div>
+                                </Link>
                                 <button onClick={handleLogout} className="bg-gray-50 hover:bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-[10px] font-bold transition-all border border-gray-100">Logout</button>
                             </div>
                         ) : (
