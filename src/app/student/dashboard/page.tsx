@@ -1,7 +1,5 @@
-'use client';
-
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { redirect } from 'next/navigation';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
 import Timeline from '@/components/dashboard/Timeline';
 import MentorCard from '@/components/dashboard/MentorCard';
@@ -12,6 +10,7 @@ import QuickLinkCard from '@/components/dashboard/QuickLinkCard';
 import { Button } from '@/components/ui/Button';
 import { Heading } from '@/components/ui/Heading';
 import Link from 'next/link';
+import { getCurrentUser } from '@/actions/user';
 
 
 // Mock Data (Hardcoded as requested)
@@ -67,58 +66,21 @@ const UPDATES = [
     }
 ];
 
-export default function StudentDashboardPage() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [studentData, setStudentData] = useState({
-        name: STUDENT_DATA.name,
-        appId: STUDENT_DATA.appId,
-        isEnrolled: STUDENT_DATA.isEnrolled
-    });
+export default async function StudentDashboardPage() {
+    // Server-side data fetching
+    const user = await getCurrentUser();
 
-    useEffect(() => {
-        console.log("Dashboard mounted");
-        const fetchUserData = async () => {
-            try {
-                // Dynamically import to ensure server action usage consistency
-                const { getCurrentUser } = await import('@/actions/user');
-                const user = await getCurrentUser();
-
-                if (!user) {
-                    console.log("No user found, showing mock data");
-                    setIsLoading(false);
-                    return;
-                }
-
-                setStudentData(prev => ({
-                    ...prev,
-                    name: user.userName || user.email?.split('@')[0] || prev.name,
-                    isEnrolled: user.isEnrolled ?? prev.isEnrolled
-                }));
-
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, []);
-
-    if (isLoading) {
-        return <div className="p-8 text-center font-bold">Loading Dashboard...</div>;
-    }
-
+    // Prepare display data
+    const displayName = user?.userName || user?.email?.split('@')[0] || STUDENT_DATA.name;
+    const displayAppId = STUDENT_DATA.appId; // Fallback or real ID if available in DB later
+    const isEnrolled = user?.isEnrolled ?? STUDENT_DATA.isEnrolled;
 
     return (
         <div className="space-y-6">
-            {/* DEBUG MARKER */}
-            <div className="hidden">Dashboard Content Rendering</div>
-
             <ProfileHeader
-                name={studentData.name}
-                appId={studentData.appId}
-                isEnrolled={studentData.isEnrolled}
+                name={displayName}
+                appId={displayAppId}
+                isEnrolled={isEnrolled}
             />
 
             <div className="lg:hidden mb-6">
