@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { supabase } from '@/lib/supabaseClient';
+
 import { Heading } from '@/components/ui/Heading';
 import { Subheading } from '@/components/ui/Subheading';
+import { getCurrentUser } from '@/actions/user'; // Import action for role check
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,31 +26,6 @@ export default function LoginPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Helper function to check if input is an email
-  const isEmail = (input: string): boolean => {
-    return input.includes('@');
-  };
-
-  // Helper function to get email from username
-  const getUserEmailByUsername = async (username: string): Promise<string | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('User')
-        .select('email')
-        .eq('userName', username)
-        .single();
-
-      if (error || !data) {
-        return null;
-      }
-
-      return data.email;
-    } catch (err) {
-      console.error('Error looking up username:', err);
-      return null;
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -57,50 +33,35 @@ export default function LoginPage() {
 
     try {
       if (activeTab === 'password') {
-        // Step 1: Determine if input is email or username
-        let emailToUse = formData.identifier;
-
-        if (!isEmail(formData.identifier)) {
-          // It's a username - look up the email
-          const lookedUpEmail = await getUserEmailByUsername(formData.identifier);
-
-          if (!lookedUpEmail) {
-            setError('Username not found. Please check your username or use your email to login.');
-            return;
-          }
-
-          emailToUse = lookedUpEmail;
-        }
-
-        // Step 2: Authenticate with Supabase using email
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
-          email: emailToUse,
-          password: formData.password,
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identifier: formData.identifier,
+            password: formData.password
+          })
         });
 
-        if (authError) {
-          setError(authError.message);
+        const result = await response.json();
+
+        if (!response.ok) {
+          setError(result.error || 'Login failed');
           return;
         }
 
-        if (data.user) {
-          // Check role from User table
-          const { data: dbUser, error: dbError } = await supabase
-            .from('User')
-            .select('role')
-            .eq('id', data.user.id)
-            .single();
+        if (result.success) {
+          // Fetch user to check role and redirect
+          // Since we just logged in via API (cookies set), we can use server action to get user
+          const user = await getCurrentUser();
 
-          if (dbError) {
-            console.error('Error fetching user profile:', dbError);
-          }
-
-          if (dbUser?.role === 'admin' || dbUser?.role === 'super_admin') {
+          if (user?.role === 'admin' || user?.role === 'super_admin') {
             router.push('/admin/dashboard');
           } else {
             router.push('/student/dashboard');
           }
+          router.refresh();
         }
+
       } else {
         setError('OTP login is not fully implemented yet. Please use password login.');
       }
@@ -112,13 +73,19 @@ export default function LoginPage() {
     }
   };
 
+  // ... (rest of UI is same, just rendering)
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative">
+      <Link href="/" className="absolute top-8 left-8 flex items-center text-gray-400 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">
+        <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Back to Home
+      </Link>
 
       {/* Logo */}
-      <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+      {/* Logo */}
+      <Link href="/" className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-blue-100 hover:bg-blue-100 transition-colors">
         <span className="text-xl font-black text-[#1e40af]">D</span>
-      </div>
+      </Link>
 
       {/* Header */}
       <div className="text-center mb-8">
@@ -133,27 +100,7 @@ export default function LoginPage() {
       {/* Login Card */}
       <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-xl shadow-blue-900/5 border border-gray-100 p-8">
 
-        {/* Tabs */}
-        <div className="flex items-center mb-8 border-b border-gray-100">
-          <button
-            onClick={() => setActiveTab('password')}
-            className={`flex-1 pb-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'password'
-              ? 'text-[#1e40af] border-b-2 border-[#1e40af]'
-              : 'text-gray-400 hover:text-gray-600'
-              }`}
-          >
-            Password
-          </button>
-          <button
-            onClick={() => setActiveTab('otp')}
-            className={`flex-1 pb-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'otp'
-              ? 'text-[#1e40af] border-b-2 border-[#1e40af]'
-              : 'text-gray-400 hover:text-gray-600'
-              }`}
-          >
-            Email OTP
-          </button>
-        </div>
+
 
         <form className="space-y-5" onSubmit={handleLogin}>
           {/* Error Message */}
@@ -179,46 +126,26 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password / OTP Input */}
-          {activeTab === 'password' ? (
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                  Password
-                </label>
-                <Link href="#" className="text-[9px] font-bold text-[#1e40af] hover:underline">
-                  FORGOT?
-                </Link>
-              </div>
-              <Input
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
-                required
-              />
-            </div>
-          ) : (
-            <div>
-              <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                Enter OTP
+          {/* Password Input */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                Password
               </label>
-              <div className="flex gap-2">
-                <Input
-                  name="otp"
-                  value={formData.otp}
-                  onChange={handleInputChange}
-                  placeholder="123456"
-                  className="bg-gray-50 border-gray-100 focus:bg-white text-center tracking-[0.5em] font-bold text-lg py-3"
-                />
-                <Button variant="outline" className="text-[10px] px-4" type="button">
-                  Send
-                </Button>
-              </div>
+              <Link href="#" className="text-[9px] font-bold text-[#1e40af] hover:underline">
+                FORGOT?
+              </Link>
             </div>
-          )}
+            <Input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="••••••••"
+              className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
+              required
+            />
+          </div>
 
           {/* Sign In Button */}
           <div className="pt-2">

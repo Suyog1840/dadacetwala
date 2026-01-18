@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { supabase } from '@/lib/supabaseClient';
+
 import { Heading } from '@/components/ui/Heading';
 import { Subheading } from '@/components/ui/Subheading';
 
@@ -20,6 +20,7 @@ export default function RegisterPage() {
         contact: '',
         email: '',
         password: '',
+        confirmPassword: '',
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,27 +34,32 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            const { data, error: signupError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        first_name: formData.firstName,
-                        last_name: formData.lastName,
-                        contact: formData.contact,
-                    }
-                }
-            });
-
-            if (signupError) {
-                setError(signupError.message);
+            if (formData.password !== formData.confirmPassword) {
+                setError("Passwords do not match");
+                setIsLoading(false);
                 return;
             }
 
-            if (data.user) {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                    fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+                    contact: formData.contact // Depending on if API uses it or not (API currently only takes email/pass, I might need to update API if I want to save name/contact in metadata)
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setError(result.error || 'Registration failed');
+                return;
+            }
+
+            if (result.success) {
                 setSuccess(true);
-                // In a production app, the User table would usually be updated via a Supabase trigger.
-                // For now, we'll wait for the user to confirm their email or redirect them.
                 setTimeout(() => {
                     router.push('/login');
                 }, 3000);
@@ -67,12 +73,16 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative">
+            <Link href="/" className="absolute top-8 left-8 flex items-center text-gray-400 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">
+                <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Home
+            </Link>
 
             {/* Logo */}
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+            <Link href="/" className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 shadow-sm border border-blue-100 hover:bg-blue-100 transition-colors">
                 <span className="text-xl font-black text-[#1e40af]">D</span>
-            </div>
+            </Link>
 
             {/* Header */}
             <div className="text-center mb-8">
@@ -92,7 +102,7 @@ export default function RegisterPage() {
                         </div>
                         <Heading as="h2">Success!</Heading>
                         <p className="text-sm text-gray-500">
-                            Please check your email to confirm your account. Redirecting you to login...
+                            Account created successfully. Redirecting you to login...
                         </p>
                     </div>
                 ) : (
@@ -179,6 +189,21 @@ export default function RegisterPage() {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                Confirm Password
+                            </label>
+                            <Input
+                                name="confirmPassword"
+                                type="password"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                placeholder="••••••••"
+                                className="bg-gray-50 border-gray-100 focus:bg-white text-sm py-3"
+                                required
+                            />
+                        </div>
+
                         <div className="pt-2">
                             <Button
                                 type="submit"
@@ -188,9 +213,9 @@ export default function RegisterPage() {
                                 {isLoading ? 'Registering...' : 'Register & Unlock'}
                             </Button>
                         </div>
-
                     </form>
                 )}
+
 
                 {/* Footer Login Link */}
                 <div className="mt-8 text-center">
@@ -209,4 +234,3 @@ export default function RegisterPage() {
         </div>
     );
 }
-

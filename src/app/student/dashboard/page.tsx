@@ -12,7 +12,7 @@ import QuickLinkCard from '@/components/dashboard/QuickLinkCard';
 import { Button } from '@/components/ui/Button';
 import { Heading } from '@/components/ui/Heading';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+
 
 // Mock Data (Hardcoded as requested)
 const STUDENT_DATA = {
@@ -79,26 +79,22 @@ export default function StudentDashboardPage() {
         console.log("Dashboard mounted");
         const fetchUserData = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                // Dynamically import to ensure server action usage consistency
+                const { getCurrentUser } = await import('@/actions/user');
+                const user = await getCurrentUser();
+
                 if (!user) {
                     console.log("No user found, showing mock data");
                     setIsLoading(false);
                     return;
                 }
 
-                const { data: dbUser } = await supabase
-                    .from('User')
-                    .select('userName, isEnrolled')
-                    .eq('id', user.id)
-                    .single();
+                setStudentData(prev => ({
+                    ...prev,
+                    name: user.userName || user.email?.split('@')[0] || prev.name,
+                    isEnrolled: user.isEnrolled ?? prev.isEnrolled
+                }));
 
-                if (dbUser) {
-                    setStudentData(prev => ({
-                        ...prev,
-                        name: dbUser.userName || user.email?.split('@')[0] || prev.name,
-                        isEnrolled: dbUser.isEnrolled ?? prev.isEnrolled
-                    }));
-                }
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             } finally {
