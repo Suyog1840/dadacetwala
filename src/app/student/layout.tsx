@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { supabase } from '@/lib/supabaseClient';
+
 import { useRouter } from 'next/navigation';
-import { User } from '@/components/types';
+import { User } from '@/types';
 
 export default function StudentLayout({
     children,
@@ -17,27 +17,33 @@ export default function StudentLayout({
 
     useEffect(() => {
         const fetchUser = async () => {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                const { data: dbUser } = await supabase
-                    .from('User')
-                    .select('userName, role')
-                    .eq('id', authUser.id)
-                    .single();
+            try {
+                const { getCurrentUser } = await import('@/actions/user');
+                const userData = await getCurrentUser();
+                if (userData) {
+                    if (!userData.isEnrolled && userData.role !== 'admin' && userData.role !== 'super_admin') {
+                        router.push('/');
+                        return;
+                    }
 
-                setUser({
-                    name: dbUser?.userName || authUser.email?.split('@')[0] || 'User',
-                    email: authUser.email || '',
-                    role: (dbUser?.role as any) || 'unenrolled'
-                });
+                    setUser({
+                        name: userData.userName || userData.email?.split('@')[0] || 'User',
+                        email: userData.email || '',
+                        role: (userData.role as any) || 'unenrolled',
+                        isEnrolled: userData.isEnrolled
+                    });
+                }
+            } catch (error) {
+                console.error("Layout fetch user error:", error);
             }
         };
         fetchUser();
     }, []);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/');
+        router.refresh();
     };
 
     return (

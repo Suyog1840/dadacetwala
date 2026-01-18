@@ -2,13 +2,17 @@
 
 import React, { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabaseClient';
+
+import { enrollStudentFirstStep } from '@/actions/enrollment';
+import { recordPayment } from '@/actions/payment';
+import { finalizeAccount, getCurrentUser } from '@/actions/user';
 
 // Enrollment Flow Component
 function EnrollmentFlow() {
@@ -21,6 +25,8 @@ function EnrollmentFlow() {
     const [isLoading, setIsLoading] = useState(false);
     const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
     const [currentTempPassword, setCurrentTempPassword] = useState<string | null>(null);
+    const [isExistingUser, setIsExistingUser] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     // Form States
     const [formData, setFormData] = useState({
@@ -29,7 +35,7 @@ function EnrollmentFlow() {
         academicStream: 'Engineering',
         homeUniversity: 'Mumbai University (MU)',
         gender: 'Male',
-        category: 'Open', // New category field
+        category: 'Open',
         email: '',
         familyIncome: '',
         mhtcet: '',
@@ -54,64 +60,22 @@ function EnrollmentFlow() {
         setIsLoading(true);
 
         try {
-            // 1️⃣ Create auth user with TEMP password
-            // Generating a random password that meets basic complexity
-            const tempPassword = `Temp@${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 10)}`;
-
-            const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
-                password: tempPassword,
-            });
-
-            if (error || !data.user) {
-                console.error('Signup error:', error);
-                alert(`Failed to create account: ${error?.message || 'Unknown error'}`);
-                return;
-            }
-
-            const userId = data.user.id;
-            setRegisteredUserId(userId);
-            setCurrentTempPassword(tempPassword);
-
-            // 2️⃣ Insert into User table (Prisma model)
-            const { error: userError } = await supabase.from('User').insert({
-                id: userId,
-                authProviderId: userId,
-                userName: formData.email.split('@')[0], // Default username
-                email: formData.email,
-                contact: formData.contactNumber,
-                role: 'student',
-                isRegistered: true,
-                isEnrolled: false,
-                status: 'active',
-                updatedAt: new Date()
-            });
-
-            if (userError) {
-                console.error('User table error:', userError);
-                alert(`Failed to save user data: ${userError.message}`);
-                return;
-            }
-
-            // 3️⃣ Insert StudentProfile (Prisma model)
-            const { error: profileError } = await supabase.from('StudentProfile').insert({
-                id: crypto.randomUUID(),
-                userId: userId,
-                name: formData.fullName, // Save student's full name for verification
-                examType: formData.academicStream,
-                category: formData.category, // Save the selected category
-                homeUniversity: formData.homeUniversity,
-                domicileState: 'Maharashtra',
-                cetPercentile: parseFloat(formData.mhtcet) || null,
-                jeePercentile: parseFloat(formData.jee) || null,
-                isCounselingActive: false,
+            // 1️⃣ Call Server Action for Registration
+            const result = await enrollStudentFirstStep({
+                ...formData,
                 plan: plan
             });
 
-            if (profileError) {
-                console.error('Profile error:', profileError);
-                alert(`Failed to save student profile: ${profileError.message}`);
+            if (!result.success || !result.userId || (!result.tempPassword && !result.isExistingUser)) {
+                console.error('Signup error:', result.error);
+                alert(`Failed to create account: ${result.error || 'Unknown error'}`);
                 return;
+            }
+
+            setRegisteredUserId(result.userId);
+            setCurrentTempPassword(result.tempPassword || null);
+            if (result.isExistingUser) {
+                setIsExistingUser(true);
             }
 
             // 4️⃣ Move to payment step
@@ -128,12 +92,12 @@ function EnrollmentFlow() {
         setIsLoading(true);
 
         try {
-            // Use local state if session is not available
             let userId = registeredUserId;
 
             if (!userId) {
-                const { data: sessionData } = await supabase.auth.getUser();
-                userId = sessionData.user?.id || null;
+                // Try to get from session if missing (edge case)
+                const user = await getCurrentUser();
+                userId = user?.id || null;
             }
 
             if (!userId) {
@@ -142,39 +106,22 @@ function EnrollmentFlow() {
                 return;
             }
 
-            // Mark payment success in Payment table (Prisma model)
-            const { error: paymentError } = await supabase.from('Payment').insert({
-                id: crypto.randomUUID(),
+            // Call Server Action for Payment
+            const result = await recordPayment({
                 userId: userId,
-                amount: Number(price),
-                currency: 'INR',
-                paymentStatus: 'SUCCESS',
-                transactionId: `TXN_${Date.now()}`,
-                paidAt: new Date()
+                amount: Number(price)
             });
 
-            if (paymentError) {
-                console.error('Payment error:', paymentError);
-                alert(`Payment recording failed: ${paymentError.message}`);
+            if (!result.success) {
+                console.error('Payment error:', result.error);
+                alert(`Payment recording failed: ${result.error}`);
                 return;
             }
 
-            // Mark user as enrolled in User table
-            const { error: userUpdateError } = await supabase
-                .from('User')
-                .update({
-                    isEnrolled: true,
-                    enrolledAt: new Date(),
-                    updatedAt: new Date()
-                })
-                .eq('id', userId);
-
-            if (userUpdateError) {
-                console.error('User update error:', userUpdateError);
-                alert(`Failed to update enrollment status: ${userUpdateError.message}`);
+            if (isExistingUser) {
+                setSuccess(true);
                 return;
             }
-
             setStep(3);
         } catch (err) {
             console.error('Unexpected error:', err);
@@ -193,54 +140,40 @@ function EnrollmentFlow() {
         setIsLoading(true);
 
         try {
-            // Ensure we have a session. If not, try to sign in with temp password
-            const { data: sessionInfo } = await supabase.auth.getSession();
+            // Ensure we are logged in.
+            let user = await getCurrentUser();
 
-            if (!sessionInfo.session && currentTempPassword && formData.email) {
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                    email: formData.email,
-                    password: currentTempPassword
+            if (!user && currentTempPassword && formData.email) {
+                // Log in with temp password via API
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identifier: formData.email,
+                        password: currentTempPassword
+                    })
                 });
 
-                if (signInError) {
-                    console.error('Sign-in with temp password failed:', signInError);
-
-                    if (signInError.message.toLowerCase().includes('email not confirmed')) {
-                        alert(`DadaCETWala Error: Email confirmation is enabled in your Supabase project. 
-                        
-To allow setting a password immediately, please go to your Supabase Dashboard -> Authentication -> Providers -> Email and DISABLE "Confirm email". 
-
-Alternatively, check your email to confirm the account before finishing this setup.`);
+                if (!response.ok) {
+                    const res = await response.json();
+                    if (res.error?.toLowerCase().includes('email not confirmed')) {
+                        alert(`DadaCETWala Error: Email confirmation enabled. Disable "Confirm email" in Supabase or confirm your email manually.`);
                     } else {
-                        alert(`Session expired. Please try to log in again or contact support: ${signInError.message}`);
+                        alert(`Failed to authenticate setup session: ${res.error}`);
                     }
                     return;
                 }
+                // Refresh user after login
+                user = await getCurrentUser();
             }
 
-            // Update password from temp to user-chosen one
-            const { error: authError } = await supabase.auth.updateUser({
-                password: formData.password,
-            });
+            // Update password & username via Server Action
+            const result = await finalizeAccount(formData.password, formData.username);
 
-            if (authError) {
-                console.error('Password update error:', authError);
-                alert(`Failed to set password: ${authError.message}`);
+            if (!result.success) {
+                console.error('Finalize error:', result.error);
+                alert(`Failed to finish setup: ${result.error}`);
                 return;
-            }
-
-            // Save permanent username if provided
-            const { data: userData } = await supabase.auth.getUser();
-            const userId = userData.user?.id;
-
-            if (userId && formData.username) {
-                await supabase
-                    .from('User')
-                    .update({
-                        userName: formData.username,
-                        updatedAt: new Date()
-                    })
-                    .eq('id', userId);
             }
 
             router.push('/student/dashboard');
@@ -296,6 +229,30 @@ Alternatively, check your email to confirm the account before finishing this set
             ))}
         </div>
     );
+
+    // Success View
+    if (success) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-8 text-center space-y-6">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600 text-3xl">
+                        ✓
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-black text-[#020617] mb-2">Enrollment Successful!</h2>
+                        <p className="text-gray-600">
+                            {isExistingUser
+                                ? "Your account has been upgraded. You can now access the student dashboard."
+                                : "Your account has been created. You can now access the student dashboard."}
+                        </p>
+                    </div>
+                    <a href="/student/dashboard" className="block w-full">
+                        <Button fullWidth size="lg">Go to Dashboard</Button>
+                    </a>
+                </div>
+            </div>
+        );
+    }
 
     // Step 1: Student Enrollment Form
     if (step === 1) {
@@ -393,7 +350,7 @@ Alternatively, check your email to confirm the account before finishing this set
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Dropdown
                                 label="Category"
                                 name="category"
@@ -412,26 +369,21 @@ Alternatively, check your email to confirm the account before finishing this set
                                 onChange={handleInputChange}
                                 required
                             />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div className="md:col-span-1">
-                                <Input
-                                    label="Annual Family Income"
-                                    placeholder="e.g. 500000"
-                                    name="familyIncome"
-                                    value={formData.familyIncome}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
+                            <Input
+                                label="Annual Family Income"
+                                placeholder="e.g. 500000"
+                                name="familyIncome"
+                                value={formData.familyIncome}
+                                onChange={handleInputChange}
+                                required
+                            />
                         </div>
 
                         <div className="border-t border-gray-100 pt-4 mt-1">
                             <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">
                                 Score Details (Optional)
                             </h3>
-                            <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto md:mx-0">
+                            <div className="grid grid-cols-3 gap-3">
                                 <Input
                                     label="MHTCET %ILE"
                                     placeholder="0.00"

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User } from "../types";
+import { User } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 
 interface NavbarProps {
@@ -24,30 +24,35 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
         }
 
         const getUser = async () => {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                // Fetch name from User table
-                const { data: dbUser } = await supabase
-                    .from('User')
-                    .select('userName, role')
-                    .eq('id', authUser.id)
-                    .single();
-
-                setUser({
-                    name: dbUser?.userName || authUser.email?.split('@')[0] || 'User',
-                    email: authUser.email || '',
-                    role: (dbUser?.role as any) || 'unenrolled'
-                });
+            try {
+                // Dynamically import the server action to avoid build issues in some setups, or just import at top if 'use client' allows 
+                // (Next.js allows importing Server Actions in Client Components)
+                const { getCurrentUser } = await import('@/actions/user');
+                const userData = await getCurrentUser();
+                if (userData) {
+                    setUser({
+                        name: userData.userName || userData.email?.split('@')[0] || 'User',
+                        email: userData.email || '',
+                        role: (userData.role as any) || 'unenrolled'
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to fetch user:", error);
             }
         };
         getUser();
     }, [initialUser]);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-        if (onLogout) onLogout();
-        router.push('/');
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            setUser(null);
+            if (onLogout) onLogout();
+            router.push('/');
+            router.refresh();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     return (
@@ -55,14 +60,14 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
             <div className="max-w-7xl mx-auto px-4 sm:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <div className="flex items-center gap-2.5">
+                    <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
                         <div className="w-8 h-8 bg-[#1e40af] rounded-lg flex items-center justify-center font-black text-white shadow-md shadow-blue-100 text-base">
                             D
                         </div>
                         <span className="text-lg font-extrabold tracking-tight text-[#02042b]">
                             Dada<span className="text-[#1e40af]">CET</span>Wala
                         </span>
-                    </div>
+                    </Link>
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6 lg:gap-8">
