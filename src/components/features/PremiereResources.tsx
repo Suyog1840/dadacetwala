@@ -2,7 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import { ServiceCard } from './ServiceCard';
 
-export const PremiereResources: React.FC = () => {
+import { User } from '../../types';
+
+interface PremiereResourcesProps {
+    user?: User | null;
+}
+
+export const PremiereResources: React.FC<PremiereResourcesProps> = ({ user }) => {
     return (
         <section className="py-10 bg-white">
             <div className="max-w-7xl mx-auto px-6 sm:px-8">
@@ -15,7 +21,7 @@ export const PremiereResources: React.FC = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                     <div className="col-span-1">
-                        <Link href="/register" className="block h-full">
+                        <Link href={user ? "/student/documents" : "/register"} className="block h-full">
                             <ServiceCard
                                 title="College Lists"
                                 description="Access government & private college lists."
@@ -24,7 +30,7 @@ export const PremiereResources: React.FC = () => {
                         </Link>
                     </div>
                     <div className="col-span-1">
-                        <Link href="/register" className="block h-full">
+                        <Link href={user ? "/student/fees" : "/register"} className="block h-full">
                             <ServiceCard
                                 title="Fees Structure"
                                 description="Detailed tuition & fees breakdown."
@@ -33,7 +39,7 @@ export const PremiereResources: React.FC = () => {
                         </Link>
                     </div>
                     <div className="col-span-2 md:col-span-1">
-                        <Link href="/register" className="block h-full">
+                        <Link href={user ? "/student/documents" : "/register"} className="block h-full">
                             <ServiceCard
                                 title="Documents"
                                 description="Lists tailored to your category."
