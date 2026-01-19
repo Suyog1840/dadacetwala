@@ -73,7 +73,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     <div className="hidden md:flex items-center gap-6 lg:gap-8">
                         <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Predictor</a>
                         <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</a>
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</a>
+                        <a href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</a>
                         <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</a>
 
                         <div className="h-4 w-[1px] bg-gray-100 mx-1"></div>
@@ -164,7 +164,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>🏛️</span> Colleges
                     </a>
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    <a href="/student/fees" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>💰</span> Fees
                     </a>
                     <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
