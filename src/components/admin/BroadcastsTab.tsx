@@ -1,24 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Heading } from '../ui/Heading';
 import { Subheading } from '../ui/Subheading';
+import { createNotice, getNotices } from '@/actions/notice';
 
 interface Broadcast {
-    id: number;
-    subject: string;
-    type: 'General Update' | 'Important' | 'Urgent';
-    message: string;
+    id: string; // Changed to string (UUID)
+    title: string; // mapped from 'subject' in old UI or directly title
+    priority: 'General Update' | 'Important' | 'Urgent'; // mapped from 'type'
+    description: string; // mapped from 'message'
     date: string;
     attachment?: string;
 }
 
 export const BroadcastsTab = () => {
-    const [notices, setNotices] = useState<Broadcast[]>([
-        { id: 1, subject: 'Option Form Filling Started', type: 'General Update', message: 'The option form filling for CAP Round 1 has started.', date: '2024-08-20' },
-        { id: 2, subject: 'Revised Document Verification Dates', type: 'Important', message: 'Please note the revised dates for document verification at FCs.', date: '2024-08-18', attachment: 'schedule.pdf' },
-        { id: 3, subject: 'Scholarship Portal Open', type: 'General Update', message: 'MahaDBT portal is now open for scholarship applications.', date: '2024-08-15' },
-    ]);
+    const [notices, setNotices] = useState<Broadcast[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        fetchNotices();
+    }, []);
+
+    const fetchNotices = async () => {
+        const data = await getNotices();
+        // Map DB fields to UI fields if necessary, though they match mostly
+        const mapped = data.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            priority: n.priority as any,
+            description: n.description,
+            date: n.date
+        }));
+        setNotices(mapped);
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+
+        try {
+            const result = await createNotice(formData);
+            if (result.success) {
+                // Refresh list
+                await fetchNotices();
+                (e.target as HTMLFormElement).reset();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to post notice');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -27,19 +65,24 @@ export const BroadcastsTab = () => {
             <div className="lg:col-span-1 bg-white rounded-[1.5rem] p-6 shadow-xl border border-gray-100 h-fit">
                 <Heading as="h3" className="mb-4">Create Broadcast</Heading>
 
-                <form className="space-y-3">
+                <form className="space-y-3" onSubmit={handleSubmit}>
                     <div>
                         <Input
+                            name="title"
                             placeholder="Subject"
                             className="bg-gray-50 border-gray-100 focus:bg-white text-xs py-2.5 font-bold shadow-sm"
+                            required
                         />
                     </div>
 
                     <div className="relative">
-                        <select className="w-full h-10 bg-gray-50 border border-gray-100 rounded-xl px-4 text-[10px] font-black text-gray-600 appearance-none focus:outline-none focus:bg-white transition-all cursor-pointer uppercase tracking-wider shadow-sm">
-                            <option>General Update</option>
-                            <option>Important</option>
-                            <option>Urgent</option>
+                        <select
+                            name="type"
+                            className="w-full h-10 bg-gray-50 border border-gray-100 rounded-xl px-4 text-[10px] font-black text-gray-600 appearance-none focus:outline-none focus:bg-white transition-all cursor-pointer uppercase tracking-wider shadow-sm"
+                        >
+                            <option value="General Update">General Update</option>
+                            <option value="Important">Important</option>
+                            <option value="Urgent">Urgent</option>
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                             <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -48,19 +91,18 @@ export const BroadcastsTab = () => {
 
                     <div>
                         <textarea
+                            name="message"
                             placeholder="Notice message..."
                             className="w-full h-20 bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs font-bold text-gray-600 focus:outline-none focus:bg-white resize-none shadow-sm placeholder:text-gray-400"
+                            required
                         ></textarea>
                     </div>
 
-                    {/* File Upload Mock */}
-                    <div className="border-2 border-dashed border-gray-100 rounded-xl p-3 text-center cursor-pointer hover:border-blue-200 transition-colors bg-gray-50/50">
-                        <span className="text-xl block mb-1">📎</span>
-                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Attach File</span>
-                    </div>
-
-                    <Button className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3 rounded-xl text-[10px] font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest mt-1">
-                        Post Notice
+                    <Button
+                        disabled={isLoading}
+                        className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3 rounded-xl text-[10px] font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest mt-1"
+                    >
+                        {isLoading ? 'Posting...' : 'Post Notice'}
                     </Button>
                 </form>
             </div>
@@ -71,22 +113,28 @@ export const BroadcastsTab = () => {
                     <Subheading>Recent Broadcasts</Subheading>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {notices.map((notice) => (
                         <div key={notice.id} className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:shadow-xl transition-shadow">
                             <div>
-                                <h4 className="text-sm font-black text-[#020617] mb-1">{notice.subject}</h4>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="text-sm font-black text-[#020617]">{notice.title}</h4>
+                                    <span className={`text-[8px] font-bold px-2 py-0.5 rounded ${notice.priority === 'Urgent' ? 'bg-red-50 text-red-600' :
+                                            notice.priority === 'Important' ? 'bg-orange-50 text-orange-600' :
+                                                'bg-blue-50 text-blue-600'
+                                        } uppercase tracking-widest`}>
+                                        {notice.priority}
+                                    </span>
+                                </div>
                                 <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{notice.date}</p>
-                                <p className="text-xs text-gray-600 font-bold leading-relaxed max-w-xl">{notice.message}</p>
+                                <p className="text-xs text-gray-600 font-bold leading-relaxed max-w-xl">{notice.description}</p>
                             </div>
-
-                            {notice.attachment && (
-                                <Button variant="outline" className="shrink-0 text-[9px] font-black uppercase tracking-widest border-blue-100 text-[#1e40af] hover:bg-blue-50 h-8 px-4 rounded-lg bg-blue-50/50">
-                                    <span className="mr-2">⬇</span> Download
-                                </Button>
-                            )}
                         </div>
                     ))}
+
+                    {notices.length === 0 && (
+                        <div className="text-center py-8 text-gray-400 text-xs">No broadcasts yet.</div>
+                    )}
                 </div>
             </div>
 

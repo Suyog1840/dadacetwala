@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                         {user ? (
                             <div className="flex items-center gap-5">
                                 <Link
-                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin/dashboard' : '/student/dashboard'}
+                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin' : '/student/dashboard'}
                                     className="flex flex-col items-end hover:opacity-80 transition-opacity cursor-pointer"
                                 >
                                     <span className="text-xs font-bold text-[#02042b]">{user.name}</span>

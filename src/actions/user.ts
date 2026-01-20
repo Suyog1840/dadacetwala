@@ -8,15 +8,26 @@ export async function getCurrentUser() {
     const { data: { user: authUser } } = await supabase.auth.getUser()
 
     if (!authUser) {
+        console.log('getCurrentUser: No auth user found');
         return null
     }
 
+    console.log('getCurrentUser: Found auth user', authUser.id);
+
     // Fetch expanded profile from User table
-    const { data: dbUser } = await supabase
+    const { data: dbUser, error } = await supabase
         .from('User')
         .select('*, StudentProfile(*)')
         .eq('id', authUser.id)
         .single()
+
+    if (error) {
+        console.error('getCurrentUser: Error fetching DB user', error);
+    } else {
+        console.log('getCurrentUser: Found DB user role:', dbUser?.role);
+    }
+
+    if (!dbUser) return { ...authUser };
 
     return {
         ...authUser,

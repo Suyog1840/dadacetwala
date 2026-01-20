@@ -56,9 +56,37 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Protect student and admin routes
+    // 1. Redirect if not logged in
     if (!user && (request.nextUrl.pathname.startsWith('/student') || request.nextUrl.pathname.startsWith('/admin'))) {
         return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // 2. Role-based protection
+    if (user) {
+        // Fetch user metadata/role from DB (since it's not always in JWT)
+        const { data: dbUser } = await supabase
+            .from('User')
+            .select('role, isEnrolled')
+            .eq('id', user.id)
+            .single()
+
+        const role = dbUser?.role?.toLowerCase();
+        const isEnrolled = dbUser?.isEnrolled;
+        const path = request.nextUrl.pathname;
+
+        // Admin Route Protection
+        if (path.startsWith('/admin')) {
+            if (role !== 'admin' && role !== 'super_admin') {
+                return NextResponse.redirect(new URL('/', request.url)) // Unauthorized -> Home
+            }
+        }
+
+        // Student Dashboard Protection
+        if (path.startsWith('/student/dashboard')) {
+            if (!isEnrolled) {
+                return NextResponse.redirect(new URL('/', request.url)) // Unenrolled -> Home
+            }
+        }
     }
 
     return response

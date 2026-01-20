@@ -53,13 +53,17 @@ export default function LoginPage() {
           // Fetch user to check role and redirect
           // Since we just logged in via API (cookies set), we can use server action to get user
           const user = await getCurrentUser();
+          console.log('Login successful, fetched user:', user);
 
-          if (user?.role === 'admin' || user?.role === 'super_admin') {
-            router.push('/admin/dashboard');
+          const role = user?.role?.toLowerCase();
+          if (role === 'admin' || role === 'super_admin') {
+            console.log('Redirecting to admin dashboard');
+            router.push('/admin');
           } else {
+            console.log('Redirecting to student dashboard');
             router.push('/student/dashboard');
           }
-          router.refresh();
+          // router.refresh(); // Removed to prevent race condition with push
         }
 
       } else {

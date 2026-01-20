@@ -40,7 +40,7 @@ export default function Home() {
   const getDashboardLink = () => {
     const role = user?.role as string;
     if (role === 'admin' || role === 'super_admin') {
-      return '/admin/dashboard';
+      return '/admin';
     }
     if (user?.isEnrolled) {
       return '/student/dashboard';
