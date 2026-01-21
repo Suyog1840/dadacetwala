@@ -21,6 +21,46 @@ export async function POST(request: Request) {
     })
 
     if (error) {
+        // Handle "Orphan User" scenario caused by Database Reset
+        if (error.message.includes("already registered") || error.code === "user_already_exists") {
+            try {
+                // Dynamically import to avoid edge runtime issues if any (though route.ts is nodejs usually)
+                const { createAdminClient } = await import('@/lib/server/supabase-admin');
+                const adminClient = createAdminClient();
+
+                // 1. Find the auth user ID
+                const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
+                if (listError) throw listError;
+
+                const existingAuthUser = users.find(u => u.email === email);
+
+                if (existingAuthUser) {
+                    // 2. Check if they exist in our local DB
+                    const { data: dbUser } = await supabase
+                        .from('User')
+                        .select('id')
+                        .eq('id', existingAuthUser.id)
+                        .single();
+
+                    // 3. If missing in DB, delete the stale Auth user
+                    if (!dbUser) {
+                        console.log('Found orphan auth user during register, deleting:', existingAuthUser.id);
+                        const { error: deleteError } = await adminClient.auth.admin.deleteUser(existingAuthUser.id);
+
+                        if (deleteError) {
+                            console.error("Cleanup failed:", deleteError);
+                            return NextResponse.json({ error: 'System sync error. Please try again.' }, { status: 500 });
+                        }
+
+                        // 4. Tell user to retry (clean state now)
+                        return NextResponse.json({ error: 'Account synced with new database. Please click "Register" again.' }, { status: 400 });
+                    }
+                }
+            } catch (err) {
+                console.error("Orphan recovery error:", err);
+            }
+        }
+
         return NextResponse.json({ error: error.message }, { status: 400 })
     }
 

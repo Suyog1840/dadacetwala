@@ -56,7 +56,8 @@ export async function enrollStudentFirstStep(formData: any) {
                 domicileState: 'Maharashtra',
                 cetPercentile: parseFloat(formData.mhtcet) || null,
                 jeePercentile: parseFloat(formData.jee) || null,
-                plan: formData.plan || 'expert'
+                plan: formData.plan || 'expert',
+                familyIncome: formData.familyIncome || null
             }).eq('userId', userId);
             profileError = error;
         } else {
@@ -71,7 +72,8 @@ export async function enrollStudentFirstStep(formData: any) {
                 domicileState: 'Maharashtra',
                 cetPercentile: parseFloat(formData.mhtcet) || null,
                 jeePercentile: parseFloat(formData.jee) || null,
-                plan: formData.plan || 'expert'
+                plan: formData.plan || 'expert',
+                familyIncome: formData.familyIncome || null
             });
             profileError = error;
         }
@@ -93,11 +95,88 @@ export async function enrollStudentFirstStep(formData: any) {
     });
 
     if (error) {
+        console.log("DEBUG: SignUp Error:", JSON.stringify(error, null, 2));
+        console.log("DEBUG: SignUp Error Message:", error.message);
+        console.log("DEBUG: SignUp Error Code:", error.code);
+
         // If user already exists but not logged in
         if (error.message.includes("already registered") || error.code === "user_already_exists") {
+            // Check if this is an "orphan" user (exists in Auth but missing in DB due to reset)
+            try {
+                const { createAdminClient } = await import('@/lib/server/supabase-admin');
+                const adminClient = createAdminClient();
+                const { data: { users }, error: adminError } = await adminClient.auth.admin.listUsers();
+
+                if (users && users.length > 0) {
+                    const existingAuthUser = users.find((u: { email?: string }) => u.email === (formData.email as string));
+
+                    if (existingAuthUser) {
+                        // Check if they exist in our User table
+                        const { data: dbUser } = await supabase
+                            .from('User')
+                            .select('id')
+                            .eq('id', existingAuthUser.id)
+                            .single();
+
+                        // If they don't exist in DB, we must have reset the DB. Re-create them!
+                        if (!dbUser) {
+                            console.log('Found orphan auth user, recreating DB record:', existingAuthUser.id);
+                            // Proceed to create the DB record using the EXISTING auth ID
+                            const userId = existingAuthUser.id;
+                            const generatedUsername = (formData.fullName || formData.email.split('@')[0])
+                                .toLowerCase()
+                                .trim()
+                                .replace(/\s+/g, '_');
+
+                            // Insert into User table
+                            const { error: userError } = await supabase.from('User').insert({
+                                id: userId,
+                                authProviderId: userId,
+                                userName: generatedUsername,
+                                email: formData.email,
+                                contact: formData.contactNumber,
+                                role: 'student',
+                                isRegistered: true,
+                                isEnrolled: false,
+                                status: 'active',
+                                updatedAt: new Date()
+                            });
+
+                            if (userError) {
+                                return { success: false, error: `Recovery failed: ${userError.message}` };
+                            }
+
+                            // Insert StudentProfile
+                            const { error: profileError } = await supabase.from('StudentProfile').insert({
+                                id: crypto.randomUUID(),
+                                userId: userId,
+                                name: formData.fullName,
+                                examType: formData.academicStream,
+                                category: formData.category,
+                                homeUniversity: formData.homeUniversity,
+                                domicileState: 'Maharashtra',
+                                cetPercentile: parseFloat(formData.mhtcet) || null,
+                                jeePercentile: parseFloat(formData.jee) || null,
+                                plan: formData.plan || 'expert',
+                                familyIncome: formData.familyIncome || null
+                            });
+
+                            if (profileError) {
+                                return { success: false, error: `Profile creation failed: ${profileError.message}` };
+                            }
+
+                            // Success! Return success as if new user
+                            return { success: true, userId, isExistingUser: false, recovered: true };
+                        }
+                    }
+                }
+            } catch (recoveryError) {
+                console.error('Error attempting to recover orphan user:', recoveryError);
+            }
+
             return { success: false, error: 'Account already exists. Please log in to complete enrollment.' };
         }
-        return { success: false, error: error?.message || 'Unknown error' };
+        return { success: false, error: error?.message || `Unknown error: ${JSON.stringify(error)}` };
     }
 
     if (!data.user) {
@@ -106,10 +185,38 @@ export async function enrollStudentFirstStep(formData: any) {
 
     const userId = data.user.id;
 
-    const generatedUsername = (formData.fullName || formData.email.split('@')[0])
+    // Generate base username
+    let baseUsername = (formData.fullName || formData.email.split('@')[0])
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '_');
+        .replace(/\s+/g, '') // Remove all spaces
+        .replace(/[^a-z0-9_]/g, ''); // Keep only alphanumeric and underscore
+
+    let generatedUsername = baseUsername;
+    let isUnique = false;
+    let attempts = 0;
+
+    // Loop to ensure uniqueness
+    while (!isUnique && attempts < 5) {
+        const { data: existingUser } = await supabase
+            .from('User')
+            .select('id')
+            .eq('userName', generatedUsername)
+            .single();
+
+        if (!existingUser) {
+            isUnique = true;
+        } else {
+            // Append random 3 digit number
+            generatedUsername = `${baseUsername}_${Math.floor(100 + Math.random() * 900)}`;
+            attempts++;
+        }
+    }
+
+    if (!isUnique) {
+        // Fallback to random string if all else fails
+        generatedUsername = `${baseUsername}_${crypto.randomUUID().slice(0, 4)}`;
+    }
 
     // 3. Insert into User table (New User)
     const { error: userError } = await supabase.from('User').insert({
@@ -141,7 +248,8 @@ export async function enrollStudentFirstStep(formData: any) {
         domicileState: 'Maharashtra',
         cetPercentile: parseFloat(formData.mhtcet) || null,
         jeePercentile: parseFloat(formData.jee) || null,
-        plan: formData.plan || 'expert'
+        plan: formData.plan || 'expert',
+        familyIncome: formData.familyIncome || null
     });
 
     if (profileError) {

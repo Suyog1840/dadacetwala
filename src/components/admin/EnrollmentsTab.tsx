@@ -5,13 +5,14 @@ import { Subheading } from '../ui/Subheading';
 import { getEnrolledStudents } from '@/actions/admin';
 
 interface Student {
-    id: string; // Changed to string
+    id: string; // User ID
     name: string;
     appId: string;
     mobile: string;
     email: string;
     status: 'Verified' | 'Pending' | 'Action Req';
     mentor: string | null;
+    mentorId: string | null;
 }
 
 export const EnrollmentsTab = () => {
@@ -19,23 +20,26 @@ export const EnrollmentsTab = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchStudents();
+        fetchData();
     }, []);
 
-    const fetchStudents = async () => {
+    const fetchData = async () => {
         setIsLoading(true);
         try {
-            const data = await getEnrolledStudents();
-            const mapped = data.map((u: any) => ({
+            const studentsData = await getEnrolledStudents();
+
+            const mappedStudents = studentsData.map((u: any) => ({
                 id: u.id,
                 name: u.StudentProfile?.name || u.studentProfile?.name || u.userName || 'Unknown',
-                appId: u.userName || 'N/A', // Using userName as App ID as requested
+                appId: u.userName || 'N/A',
                 mobile: u.contact || 'N/A',
                 email: u.email,
-                status: 'Verified' as 'Verified' | 'Pending' | 'Action Req', // Helper status for now since isEnrolled is true
-                mentor: null // Mentor logic not yet fully implemented
+                status: 'Verified' as 'Verified' | 'Pending' | 'Action Req',
+                mentor: u.StudentProfile?.mentor?.name || u.studentProfile?.mentor?.name || null,
+                mentorId: u.StudentProfile?.mentorId || u.studentProfile?.mentorId || null
             }));
-            setStudents(mapped);
+
+            setStudents(mappedStudents);
         } catch (error) {
             console.error(error);
         } finally {
@@ -78,9 +82,9 @@ export const EnrollmentsTab = () => {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto h-[600px] overflow-y-auto">
                 <table className="w-full">
-                    <thead>
+                    <thead className="sticky top-0 bg-white z-10">
                         <tr className="border-b border-gray-100">
                             <th className="text-left pb-3 pl-2 text-[8px] font-black text-gray-400 uppercase tracking-widest">Student Name</th>
                             <th className="text-left pb-3 text-[8px] font-black text-gray-400 uppercase tracking-widest">App ID</th>
@@ -125,16 +129,11 @@ export const EnrollmentsTab = () => {
                                                 <span className="text-[10px] font-bold text-[#1e40af]">{student.mentor}</span>
                                             </div>
                                         ) : (
-                                            <span className="text-[9px] font-bold text-gray-400 italic">Unassigned</span>
+                                            <span className="text-[10px] font-medium text-gray-400 italic">Unassigned</span>
                                         )}
                                     </td>
                                     <td className="py-2.5 pr-2 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            {!student.mentor && (
-                                                <button className="text-[8px] font-black uppercase tracking-widest text-[#1e40af] hover:bg-blue-50 px-2 py-1 rounded-md border border-transparent hover:border-blue-100 transition-all">
-                                                    Assign
-                                                </button>
-                                            )}
                                             <button className="text-[8px] font-black uppercase tracking-widest text-[#1e40af] hover:bg-blue-50 px-2 py-1 rounded-md border border-transparent hover:border-blue-100 transition-all flex items-center gap-1">
                                                 <span>⬇</span> Pref List
                                             </button>

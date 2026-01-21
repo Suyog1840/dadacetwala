@@ -42,6 +42,9 @@ export default function Home() {
     if (role === 'admin' || role === 'super_admin') {
       return '/admin';
     }
+    if (role === 'mentor') {
+      return '/mentor';
+    }
     if (user?.isEnrolled) {
       return '/student/dashboard';
     }
@@ -72,7 +75,7 @@ export default function Home() {
                 href={getDashboardLink()}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
               >
-                {user.isEnrolled || user.role === 'admin' ? 'Go to Dashboard' : 'Complete Enrollment to Unlock Features'}
+                {user.isEnrolled || user.role === 'admin' || user.role === 'mentor' ? 'Go to Dashboard' : 'Complete Enrollment to Unlock Features'}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>

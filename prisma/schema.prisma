@@ -27,8 +27,8 @@ model User {
 }
 
 model StudentProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
+  id                String         @id @default(uuid())
+  userId            String         @unique
   examType          String
   cetPercentile     Float?
   rank              Int?
@@ -36,23 +36,24 @@ model StudentProfile {
   domicileState     String
   homeUniversity    String
   plan              String
-  createdAt         DateTime @default(now())
+  familyIncome      String?
+  createdAt         DateTime       @default(now())
   diplomaPercentage Float?
   jeePercentile     Float?
   pcbPercentile     Float?
   name              String?
   mentorId          String?
   mentor            MentorProfile? @relation(fields: [mentorId], references: [id])
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model MentorProfile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
+  id        String           @id @default(uuid())
+  userId    String           @unique
   name      String
-  contact   String   @unique
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact   String           @unique
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   students  StudentProfile[]
 }
 

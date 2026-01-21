@@ -9,10 +9,11 @@ import { Subheading } from '../../components/ui/Subheading';
 import { TimelineEditor } from '../../components/admin/TimelineEditor';
 import { BroadcastsTab } from '../../components/admin/BroadcastsTab';
 import { EnrollmentsTab } from '../../components/admin/EnrollmentsTab';
+import { MentorsTab } from '../../components/admin/MentorsTab';
 import { DocVaultTab } from '../../components/admin/DocVaultTab';
 
 export default function AdminPage() {
-    const [activeTab, setActiveTab] = useState<'broadcasts' | 'enrollments' | 'docs' | 'timeline'>('timeline');
+    const [activeTab, setActiveTab] = useState<'broadcasts' | 'enrollments' | 'docs' | 'timeline' | 'mentors'>('timeline');
 
     return (
         <div className="min-h-screen bg-white">
@@ -42,6 +43,7 @@ export default function AdminPage() {
                         </Button>
                     </div>
 
+
                     {/* Tags Navigation */}
                     <div className="flex items-center gap-8 mt-6 overflow-x-auto no-scrollbar">
                         <button
@@ -61,6 +63,15 @@ export default function AdminPage() {
                                 }`}
                         >
                             Enrollments
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('mentors')}
+                            className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'mentors'
+                                ? 'text-[#1e40af] border-b-2 border-[#1e40af]'
+                                : 'text-gray-300 hover:text-gray-500'
+                                }`}
+                        >
+                            Mentors
                         </button>
                         <button
                             onClick={() => setActiveTab('docs')}
@@ -88,6 +99,7 @@ export default function AdminPage() {
             <main className="max-w-7xl mx-auto px-6 py-8">
                 {activeTab === 'broadcasts' && <BroadcastsTab />}
                 {activeTab === 'enrollments' && <EnrollmentsTab />}
+                {activeTab === 'mentors' && <MentorsTab />}
                 {activeTab === 'docs' && <DocVaultTab />}
                 {activeTab === 'timeline' && <TimelineEditor />}
             </main>

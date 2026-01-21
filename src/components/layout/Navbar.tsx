@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                         {user ? (
                             <div className="flex items-center gap-5">
                                 <Link
-                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin' : '/student/dashboard'}
+                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin' : user.role === 'mentor' ? '/mentor' : '/student/dashboard'}
                                     className="flex flex-col items-end hover:opacity-80 transition-opacity cursor-pointer"
                                 >
                                     <span className="text-xs font-bold text-[#02042b]">{user.name}</span>
@@ -130,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                         {/* Login Button (Icon on mobile) */}
                         {user ? (
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#1e40af] text-xs font-bold ring-2 ring-white">
-                                {user.name[0]}
+                                {(user.name || 'U')[0]}
                             </div>
                         ) : (
                             <Link href="/login" className="bg-[#1e40af] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">

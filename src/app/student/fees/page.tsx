@@ -18,7 +18,7 @@ export default async function FeesPage(props: {
 
     return (
         <div className="container mx-auto p-4 sm:p-6">
-            <h1 className="text-2xl font-bold mb-6 text-[#020617]">College Fees Structure</h1>
+            <h1 className="text-2xl font-bold mb-6 text-[#020617] text-center">College Fees Structure</h1>
 
             <SearchBar />
 
