@@ -29,12 +29,24 @@ const TIMELINE_STEPS = [
     { id: 5, label: 'Seat Allotment', date: 'Sept 01', status: 'upcoming' as const },
 ];
 
+import { getTimelineEvents } from '@/actions/timeline';
+
 export default async function StudentDashboardPage() {
     // Server-side data fetching
     const userPromise = getCurrentUser();
-    const noticesPromise = getNotices(10); // Fetch top 10
+    const noticesPromise = getNotices(10);
+    const timelinePromise = getTimelineEvents();
 
-    const [user, notices] = await Promise.all([userPromise, noticesPromise]);
+    const [user, notices, timelineEvents] = await Promise.all([userPromise, noticesPromise, timelinePromise]);
+
+    // Map existing DB events to UI format
+    const timelineSteps = timelineEvents.length > 0 ? timelineEvents.map((t: any, index: number) => ({
+        id: index + 1,
+        label: t.title,
+        date: `${new Date(t.startDate).getDate()} ${new Date(t.startDate).toLocaleString('default', { month: 'short' })}`, // Simple format: "10 Aug"
+        status: t.status
+    })) : TIMELINE_STEPS; // Fallback to mock if empty
+
 
     // Map notices to UpdateItems
     const mappedUpdates = notices.map((n: any) => ({
@@ -60,13 +72,13 @@ export default async function StudentDashboardPage() {
             />
 
             <div className="lg:hidden mb-6">
-                <Timeline steps={TIMELINE_STEPS} />
+                <Timeline steps={timelineSteps} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6 order-3 lg:order-1">
                     <div className="hidden lg:block">
-                        <Timeline steps={TIMELINE_STEPS} />
+                        <Timeline steps={timelineSteps} />
                     </div>
 
                     <PredictorWidget />

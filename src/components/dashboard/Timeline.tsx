@@ -30,9 +30,7 @@ const Timeline: React.FC<TimelineProps> = ({ steps }) => {
                 {/* Mobile: Horizontal scroll container, Desktop: Flex row centered */}
                 <div className="flex md:flex-row justify-start md:justify-between items-start md:items-start gap-4 md:gap-0 relative z-10 w-full overflow-x-auto pb-4 md:pb-0 hide-scrollbar scroll-smooth snap-x snap-mandatory">
                     {steps.map((step) => (
-                        <div key={step.id} className="flex flex-col items-center gap-2 md:gap-3 min-w-[80px] md:min-w-0 md:w-auto relative snap-center shrink-0">
-                            {/* Line connector for mobile - optional, but keeping simple for now */}
-
+                        <div key={step.id} className="flex flex-col items-center gap-2 md:gap-3 min-w-[100px] md:min-w-0 md:w-auto relative snap-center shrink-0">
                             {/* Circle Indicator */}
                             <div className={`
                                 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm shadow-sm transition-all z-10 shrink-0
@@ -43,19 +41,19 @@ const Timeline: React.FC<TimelineProps> = ({ steps }) => {
                                 {step.status === 'completed' ? (
                                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                                 ) : (
-                                    step.id
+                                    <span className={step.status === 'upcoming' ? 'opacity-50' : ''}>{step.id}</span>
                                 )}
                             </div>
 
                             {/* Labels */}
                             <div className="text-center mt-1 md:mt-2">
                                 <p className={`
-                                    text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1 leading-tight whitespace-normal md:whitespace-nowrap
+                                    text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1 leading-tight whitespace-normal md:whitespace-nowrap max-w-[120px]
                                     ${step.status === 'upcoming' ? 'text-gray-300' : 'text-[#020617]'}
                                 `}>
                                     {step.label}
                                 </p>
-                                <p className="text-[8px] md:text-[10px] font-bold text-gray-400">
+                                <p className="text-[8px] md:text-[9px] font-bold text-gray-400">
                                     {step.date}
                                 </p>
                             </div>
