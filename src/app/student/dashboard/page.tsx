@@ -42,7 +42,8 @@ export default async function StudentDashboardPage() {
         date: n.date, // or use createdAt formatted
         title: n.title,
         description: n.description,
-        type: (n.priority === 'Urgent' || n.priority === 'Important') ? 'alert' : 'info'
+        type: (n.priority === 'Urgent' || n.priority === 'Important') ? 'alert' : 'info',
+        attachmentUrl: n.attachmentUrl
     }));
 
     // Prepare display data

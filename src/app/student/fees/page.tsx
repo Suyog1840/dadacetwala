@@ -1,29 +1,10 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { getCollegeFees } from '@/actions/fees';
 import FeeCard from '@/components/fees/FeeCard';
 import { Button } from '@/components/ui/Button'; // Assuming generic UI components exist
-import { Input } from '@/components/ui/Input';   // Assuming generic UI components exist
 import Link from 'next/link';
 
-// Search and Filter Component
-function SearchBar({ searchParams }: { searchParams: { query?: string } }) {
-    return (
-        <form action="" method="GET" className="flex gap-2 mb-6">
-            <Input
-                name="query"
-                placeholder="Search by college name or code..."
-                defaultValue={searchParams.query || ''}
-                className="flex-grow"
-            />
-            <Button type="submit">Search</Button>
-            {searchParams.query && (
-                <Link href="/student/fees">
-                    <Button variant="outline" type="button">Clear</Button>
-                </Link>
-            )}
-        </form>
-    );
-}
+import SearchBar from '@/components/fees/SearchBar';
 
 // Main Page Component
 export default async function FeesPage(props: {
@@ -39,7 +20,7 @@ export default async function FeesPage(props: {
         <div className="container mx-auto p-4 sm:p-6">
             <h1 className="text-2xl font-bold mb-6 text-[#020617]">College Fees Structure</h1>
 
-            <SearchBar searchParams={{ query }} />
+            <SearchBar />
 
             {fees.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">

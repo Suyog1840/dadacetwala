@@ -26,3 +26,21 @@ export async function getEnrolledStudents() {
 
     return data
 }
+
+export async function updateCollegeFeesUrl(collegeCode: string, pdfUrl: string) {
+    const supabase = await createClient();
+    const { revalidatePath } = await import('next/cache');
+
+    const { error } = await supabase
+        .from('CollegeDetails')
+        .update({ feesPdfUrl: pdfUrl })
+        .eq('collegeCode', collegeCode);
+
+    if (error) {
+        console.error('Update Fees URL Error:', error);
+        return { success: false, error: error.message };
+    }
+
+    revalidatePath('/student/fees');
+    return { success: true };
+}

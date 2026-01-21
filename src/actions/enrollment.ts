@@ -56,7 +56,6 @@ export async function enrollStudentFirstStep(formData: any) {
                 domicileState: 'Maharashtra',
                 cetPercentile: parseFloat(formData.mhtcet) || null,
                 jeePercentile: parseFloat(formData.jee) || null,
-                isCounselingActive: false,
                 plan: formData.plan || 'expert'
             }).eq('userId', userId);
             profileError = error;
@@ -72,7 +71,6 @@ export async function enrollStudentFirstStep(formData: any) {
                 domicileState: 'Maharashtra',
                 cetPercentile: parseFloat(formData.mhtcet) || null,
                 jeePercentile: parseFloat(formData.jee) || null,
-                isCounselingActive: false,
                 plan: formData.plan || 'expert'
             });
             profileError = error;
@@ -143,7 +141,6 @@ export async function enrollStudentFirstStep(formData: any) {
         domicileState: 'Maharashtra',
         cetPercentile: parseFloat(formData.mhtcet) || null,
         jeePercentile: parseFloat(formData.jee) || null,
-        isCounselingActive: false,
         plan: formData.plan || 'expert'
     });
 
