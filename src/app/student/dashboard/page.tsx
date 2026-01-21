@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Heading } from '@/components/ui/Heading';
 import Link from 'next/link';
 import { getCurrentUser } from '@/actions/user';
+import { getNotices } from '@/actions/notice';
 
 
 // Mock Data (Hardcoded as requested)
@@ -28,47 +29,21 @@ const TIMELINE_STEPS = [
     { id: 5, label: 'Seat Allotment', date: 'Sept 01', status: 'upcoming' as const },
 ];
 
-const UPDATES = [
-    {
-        id: 1,
-        date: '2024-08-20',
-        title: 'Option Form Filling Started',
-        description: 'The option form filling for CAP Round 1 is now live. Please submit.',
-        type: 'alert' as const
-    },
-    {
-        id: 2,
-        date: '2024-08-18',
-        title: 'Revised Document Verification Dates',
-        description: 'SC centers have extended verification till 5 PM tomorrow.',
-        type: 'alert' as const
-    },
-    {
-        id: 3,
-        date: '2024-08-15',
-        title: 'Provisional Merit List Declared',
-        description: 'Check your rank and report grievances if any before 5 PM.',
-        type: 'info' as const
-    },
-    {
-        id: 4,
-        date: '2024-08-12',
-        title: 'New College Added to Matrix',
-        description: 'COEP Tech University has added 60 seats in CS branch.',
-        type: 'info' as const
-    },
-    {
-        id: 5,
-        date: '2024-08-10',
-        title: 'ARC Center List Updated',
-        description: 'New ARC centers have been added for Pune region.',
-        type: 'info' as const
-    }
-];
-
 export default async function StudentDashboardPage() {
     // Server-side data fetching
-    const user = await getCurrentUser();
+    const userPromise = getCurrentUser();
+    const noticesPromise = getNotices(10); // Fetch top 10
+
+    const [user, notices] = await Promise.all([userPromise, noticesPromise]);
+
+    // Map notices to UpdateItems
+    const mappedUpdates = notices.map((n: any) => ({
+        id: n.id,
+        date: n.date, // or use createdAt formatted
+        title: n.title,
+        description: n.description,
+        type: (n.priority === 'Urgent' || n.priority === 'Important') ? 'alert' : 'info'
+    }));
 
     // Prepare display data
     const displayName = user?.userName || user?.email?.split('@')[0] || STUDENT_DATA.name;
@@ -127,7 +102,8 @@ export default async function StudentDashboardPage() {
                 </div>
 
                 <div className="lg:col-span-1 space-y-4 order-2 lg:order-2">
-                    <UpdateCard updates={UPDATES} />
+                    {/* Pass real mapped updates casted to any to bypass strict type check if ids mismatch (string vs number) */}
+                    <UpdateCard updates={mappedUpdates as any} />
                     <MentorCard
                         name="Dada Counselor Team"
                         role="Academic Strategist"
