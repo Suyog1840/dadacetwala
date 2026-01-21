@@ -6,6 +6,7 @@ interface UpdateItem {
     title: string;
     description: string;
     type: 'alert' | 'info';
+    attachmentUrl?: string; // Optional attachment
 }
 
 const UpdateCard: React.FC<{ updates: UpdateItem[] }> = ({ updates }) => {
@@ -29,6 +30,17 @@ const UpdateCard: React.FC<{ updates: UpdateItem[] }> = ({ updates }) => {
                         <p className="text-[9px] text-gray-500 leading-relaxed font-medium">
                             {update.description}
                         </p>
+                        {update.attachmentUrl && (
+                            <a
+                                href={update.attachmentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 mt-2 text-[9px] font-black text-[#1e40af] hover:underline"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                DOWNLOAD ATTACHMENT
+                            </a>
+                        )}
                     </div>
                 ))}
             </div>

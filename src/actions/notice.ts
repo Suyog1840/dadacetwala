@@ -43,7 +43,8 @@ export async function createNotice(formData: FormData) {
             description,
             priority, // Storing as 'General Update' etc directly or mapping? Schema calls for String.
             date,
-            createdBy: user.id
+            createdBy: user.id,
+            attachmentUrl: formData.get('attachmentUrl') as string | null
             // seen: false default
         })
 

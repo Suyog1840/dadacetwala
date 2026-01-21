@@ -4,6 +4,7 @@ import { Input } from '../ui/Input';
 import { Heading } from '../ui/Heading';
 import { Subheading } from '../ui/Subheading';
 import { createNotice, getNotices } from '@/actions/notice';
+import { uploadFile } from '@/actions/storage';
 
 interface Broadcast {
     id: string; // Changed to string (UUID)
@@ -17,6 +18,8 @@ interface Broadcast {
 export const BroadcastsTab = () => {
     const [notices, setNotices] = useState<Broadcast[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
 
     useEffect(() => {
         fetchNotices();
@@ -42,19 +45,37 @@ export const BroadcastsTab = () => {
         const formData = new FormData(e.currentTarget);
 
         try {
+            if (file) {
+                setUploading(true);
+                const fileData = new FormData();
+                fileData.append('file', file);
+
+                const result = await uploadFile(fileData, 'attachments', 'broadcasts');
+
+                if (!result.success || !result.publicUrl) {
+                    throw new Error(result.error || 'File upload failed');
+                }
+
+                formData.append('attachmentUrl', result.publicUrl);
+                setUploading(false);
+            }
+
             const result = await createNotice(formData);
             if (result.success) {
                 // Refresh list
                 await fetchNotices();
                 (e.target as HTMLFormElement).reset();
+                setFile(null);
+                alert('Broadcast sent successfully!');
             } else {
                 alert('Error: ' + result.error);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to post notice');
+            alert('Failed to post notice: ' + error.message);
         } finally {
             setIsLoading(false);
+            setUploading(false);
         }
     };
 
@@ -98,11 +119,26 @@ export const BroadcastsTab = () => {
                         ></textarea>
                     </div>
 
+                    <div className="relative">
+                        <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                            className="block w-full text-xs text-slate-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-xl file:border-0
+                                file:text-xs file:font-semibold
+                                file:bg-blue-50 file:text-[#1e40af]
+                                hover:file:bg-blue-100
+                            "
+                        />
+                    </div>
+
                     <Button
-                        disabled={isLoading}
+                        disabled={isLoading || uploading}
                         className="w-full bg-[#1e40af] hover:bg-[#1e3a8a] py-3 rounded-xl text-[10px] font-black shadow-lg shadow-blue-900/20 uppercase tracking-widest mt-1"
                     >
-                        {isLoading ? 'Posting...' : 'Post Notice'}
+                        {isLoading || uploading ? 'Posting...' : 'Post Notice'}
                     </Button>
                 </form>
             </div>
@@ -120,8 +156,8 @@ export const BroadcastsTab = () => {
                                 <div className="flex items-center gap-2 mb-1">
                                     <h4 className="text-sm font-black text-[#020617]">{notice.title}</h4>
                                     <span className={`text-[8px] font-bold px-2 py-0.5 rounded ${notice.priority === 'Urgent' ? 'bg-red-50 text-red-600' :
-                                            notice.priority === 'Important' ? 'bg-orange-50 text-orange-600' :
-                                                'bg-blue-50 text-blue-600'
+                                        notice.priority === 'Important' ? 'bg-orange-50 text-orange-600' :
+                                            'bg-blue-50 text-blue-600'
                                         } uppercase tracking-widest`}>
                                         {notice.priority}
                                     </span>

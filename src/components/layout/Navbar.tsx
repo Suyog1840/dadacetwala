@@ -133,9 +133,9 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                                 {user.name[0]}
                             </div>
                         ) : (
-                            <button className="bg-[#1e40af] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                            <Link href="/login" className="bg-[#1e40af] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
                                 Login
-                            </button>
+                            </Link>
                         )}
 
                         {/* Hamburger Menu */}
