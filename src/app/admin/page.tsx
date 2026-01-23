@@ -14,6 +14,11 @@ import { DocVaultTab } from '../../components/admin/DocVaultTab';
 
 export default function AdminPage() {
     const [activeTab, setActiveTab] = useState<'broadcasts' | 'enrollments' | 'docs' | 'timeline' | 'mentors'>('timeline');
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleSync = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
     return (
         <div className="min-h-screen bg-white">
@@ -38,7 +43,10 @@ export default function AdminPage() {
                                 <Subheading>Control Terminal</Subheading>
                             </div>
                         </div>
-                        <Button className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/20">
+                        <Button
+                            onClick={handleSync}
+                            className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all"
+                        >
                             Global Sync
                         </Button>
                     </div>
@@ -97,11 +105,11 @@ export default function AdminPage() {
 
             {/* Main Content Area */}
             <main className="max-w-7xl mx-auto px-6 py-8">
-                {activeTab === 'broadcasts' && <BroadcastsTab />}
-                {activeTab === 'enrollments' && <EnrollmentsTab />}
-                {activeTab === 'mentors' && <MentorsTab />}
-                {activeTab === 'docs' && <DocVaultTab />}
-                {activeTab === 'timeline' && <TimelineEditor />}
+                {activeTab === 'broadcasts' && <BroadcastsTab key={refreshKey} />}
+                {activeTab === 'enrollments' && <EnrollmentsTab key={refreshKey} />}
+                {activeTab === 'mentors' && <MentorsTab key={refreshKey} />}
+                {activeTab === 'docs' && <DocVaultTab key={refreshKey} />}
+                {activeTab === 'timeline' && <TimelineEditor key={refreshKey} />}
             </main>
         </div>
     );

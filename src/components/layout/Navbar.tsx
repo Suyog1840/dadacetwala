@@ -72,9 +72,9 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6 lg:gap-8">
                         <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Predictor</a>
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</a>
-                        <a href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</a>
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</a>
+                        <Link href="/student/colleges" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</Link>
+                        <Link href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</Link>
+                        <Link href="/student/documents" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</Link>
 
                         <div className="h-4 w-[1px] bg-gray-100 mx-1"></div>
 
@@ -161,15 +161,15 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>📊</span> Predictor
                     </a>
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    <Link href="/student/colleges" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>🏛️</span> Colleges
-                    </a>
-                    <a href="/student/fees" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    </Link>
+                    <Link href="/student/fees" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>💰</span> Fees
-                    </a>
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    </Link>
+                    <Link href="/student/documents" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>📄</span> Documents
-                    </a>
+                    </Link>
 
                     {user && (
                         <button onClick={handleLogout} className="mt-2 w-full text-center bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold border border-gray-100">

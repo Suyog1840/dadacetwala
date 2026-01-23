@@ -159,10 +159,20 @@ export async function getAssignedStudents(mentorUserId: string) {
 
     if (!mentorProfile) return []
 
-    const { data, error } = await adminSupabase
-        .from('StudentProfile')
-        .select('*, user:User(userName, email, contact)')
-        .eq('mentorId', mentorProfile.id)
+    const supabase = await createClient(); // Use standard client for storage request
+
+    // Parallelize Students Fetch + File List
+    const [studentsResponse, storageResponse] = await Promise.all([
+        adminSupabase
+            .from('StudentProfile')
+            .select('*, user:User(userName, email, contact, enrolledAt, status)')
+            .eq('mentorId', mentorProfile.id),
+
+        supabase.storage.from('preference_list').list('', { limit: 1000 })
+    ]);
+
+    const { data, error } = studentsResponse;
+    const { data: fileList } = storageResponse;
 
     console.log('[DEBUG] getAssignedStudents - Students Found:', data?.length);
     if (error) {
@@ -170,7 +180,23 @@ export async function getAssignedStudents(mentorUserId: string) {
         return []
     }
 
-    return data
+    const existingFiles = new Set(fileList?.map(f => f.name));
+
+    return data.map((student: any) => {
+        const userName = student.user?.userName;
+
+        const fileName = `${userName}.pdf`;
+        let preferenceListUrl = null;
+        if (userName && existingFiles.has(fileName)) {
+            const { data: urlData } = supabase.storage.from('preference_list').getPublicUrl(fileName);
+            preferenceListUrl = urlData.publicUrl;
+        }
+
+        return {
+            ...student,
+            preferenceListUrl
+        };
+    });
 }
 
 export async function uploadPreferenceList(formData: FormData) {

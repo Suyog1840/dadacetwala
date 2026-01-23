@@ -66,14 +66,26 @@ export const MentorsTab = () => {
 
             setMentors(mentorsData as any);
 
-            const mappedStudents = studentsData.map((u: any) => ({
-                id: u.id,
-                name: u.StudentProfile?.name || u.studentProfile?.name || u.userName || 'Unknown',
-                status: 'Verified', // Simplified for this view
-                mentor: u.StudentProfile?.mentor?.name || u.studentProfile?.mentor?.name || null,
-                mentorId: u.StudentProfile?.mentorId || u.studentProfile?.mentorId || null,
-                appId: u.userName || 'N/A'
-            }));
+            const mappedStudents = studentsData.map((u: any) => {
+                // Handle various casing and array/object structures for StudentProfile
+                let profile = u.StudentProfile || u.studentProfile;
+                if (Array.isArray(profile)) profile = profile[0];
+
+                const mentorId = profile?.mentorId || null;
+                // Try to get name from nested relation, fall back to lookup in mentors list
+                const mentorNameResult = profile?.mentor?.name ||
+                    (mentorId ? (mentorsData as any).find((m: any) => m.id === mentorId)?.name : null);
+
+                return {
+                    id: u.id,
+                    name: profile?.name || u.userName || 'Unknown',
+                    status: 'Verified',
+                    mentor: mentorNameResult,
+                    mentorId: mentorId,
+                    appId: u.userName || 'N/A'
+                };
+            });
+
             setStudents(mappedStudents);
 
         } catch (e) {
