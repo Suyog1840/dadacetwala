@@ -13,6 +13,8 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect } from '@/components/ui/FilterSelect';
 import { ExportButton } from '@/components/ui/ExportButton';
 
+import { Button } from '@/components/ui/Button';
+
 export default function MentorPage() {
     const [user, setUser] = useState<any>(null);
     const [students, setStudents] = useState<any[]>([]); // Raw data
@@ -143,9 +145,18 @@ export default function MentorPage() {
             />
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="mb-8">
-                    <Heading as="h1">Mentor Dashboard</Heading>
-                    <Subheading>Manage your assigned students and their preferences.</Subheading>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <Heading as="h1">Mentor Dashboard</Heading>
+                        <Subheading>Manage your assigned students and their preferences.</Subheading>
+                    </div>
+                    <Button
+                        onClick={init}
+                        disabled={isLoading}
+                        className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all"
+                    >
+                        {isLoading ? 'Syncing...' : 'Global Sync'}
+                    </Button>
                 </div>
 
                 <div className="bg-white rounded-[1.5rem] p-6 shadow-xl border border-gray-100 overflow-hidden">
