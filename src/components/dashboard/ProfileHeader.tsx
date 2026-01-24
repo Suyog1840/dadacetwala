@@ -7,9 +7,10 @@ interface ProfileHeaderProps {
     name: string;
     appId: string;
     isEnrolled: boolean;
+    preferenceListUrl?: string | null;
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, appId, isEnrolled }) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, appId, isEnrolled, preferenceListUrl }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 animate-fade-in">
             <div className="flex items-center gap-4">
@@ -34,9 +35,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, appId, isEnrolled }
                 </div>
             </div>
 
-            <Button variant="primary" size="md" className="shadow-lg shadow-blue-100">
-                <span className="mr-2">📄</span> Download Preference List
-            </Button>
+            {preferenceListUrl ? (
+                <a
+                    href={preferenceListUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="inline-block" // simple container
+                >
+                    {/* Render a visual button but using a div to avoid <button> inside <a> */}
+                    <div className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-100 flex items-center cursor-pointer transition-colors uppercase tracking-widest">
+                        <span className="mr-2">📄</span> Download Preference List
+                    </div>
+                </a>
+            ) : (
+                <Button variant="primary" size="md" className="shadow-lg shadow-blue-100 opacity-50 cursor-not-allowed">
+                    <span className="mr-2">📄</span> Download Preference List
+                </Button>
+            )}
         </div>
     );
 };

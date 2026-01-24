@@ -39,6 +39,13 @@ export default async function StudentDashboardPage() {
 
     const [user, notices, timelineEvents] = await Promise.all([userPromise, noticesPromise, timelinePromise]);
 
+    // Fetch preference list if user exists
+    let preferenceListUrl = null;
+    if (user && user.userName) {
+        const { getPreferenceListUrl } = await import('@/actions/storage');
+        preferenceListUrl = await getPreferenceListUrl(user.userName);
+    }
+
     // Map existing DB events to UI format
     const timelineSteps = timelineEvents.length > 0 ? timelineEvents.map((t: any, index: number) => ({
         id: index + 1,
@@ -63,12 +70,20 @@ export default async function StudentDashboardPage() {
     const displayAppId = STUDENT_DATA.appId; // Fallback or real ID if available in DB later
     const isEnrolled = user?.isEnrolled ?? STUDENT_DATA.isEnrolled;
 
+    // Safety check for StudentProfile (handle array or object)
+    const studentProfile = Array.isArray(user?.StudentProfile)
+        ? user?.StudentProfile[0]
+        : user?.StudentProfile;
+
+    const mentor = studentProfile?.mentor;
+
     return (
         <div className="space-y-6">
             <ProfileHeader
                 name={displayName}
                 appId={displayAppId}
                 isEnrolled={isEnrolled}
+                preferenceListUrl={preferenceListUrl}
             />
 
             <div className="lg:hidden mb-6">
@@ -94,16 +109,20 @@ export default async function StudentDashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <QuickLinkCard
-                            icon="🏛️"
-                            title="College Lists"
-                            subtitle="Access government & private college lists."
-                        />
-                        <QuickLinkCard
-                            icon="💰"
-                            title="Fees Structure"
-                            subtitle="Detailed tuition & fees breakdown."
-                        />
+                        <Link href="/student/colleges" className="block h-full">
+                            <QuickLinkCard
+                                icon="🏛️"
+                                title="College Lists"
+                                subtitle="Access government & private college lists."
+                            />
+                        </Link>
+                        <Link href="/student/fees" className="block h-full">
+                            <QuickLinkCard
+                                icon="💰"
+                                title="Fees Structure"
+                                subtitle="Detailed tuition & fees breakdown."
+                            />
+                        </Link>
                         <Link href="/student/documents" className="block h-full">
                             <QuickLinkCard
                                 icon="📁"
@@ -118,8 +137,9 @@ export default async function StudentDashboardPage() {
                     {/* Pass real mapped updates casted to any to bypass strict type check if ids mismatch (string vs number) */}
                     <UpdateCard updates={mappedUpdates as any} />
                     <MentorCard
-                        name="Dada Counselor Team"
+                        name={mentor?.name || "Dada Counselor Team"}
                         role="Academic Strategist"
+                        contact={mentor?.contact}
                     />
                     <DashboardDocumentWidget />
                 </div>

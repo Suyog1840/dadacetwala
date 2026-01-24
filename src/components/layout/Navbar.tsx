@@ -72,9 +72,9 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6 lg:gap-8">
                         <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Predictor</a>
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</a>
-                        <a href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</a>
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</a>
+                        <Link href="/student/colleges" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</Link>
+                        <Link href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</Link>
+                        <Link href="/student/documents" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</Link>
 
                         <div className="h-4 w-[1px] bg-gray-100 mx-1"></div>
 
@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                         {user ? (
                             <div className="flex items-center gap-5">
                                 <Link
-                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin' : '/student/dashboard'}
+                                    href={user.role === 'admin' || user.role === 'super_admin' ? '/admin' : user.role === 'mentor' ? '/mentor' : '/student/dashboard'}
                                     className="flex flex-col items-end hover:opacity-80 transition-opacity cursor-pointer"
                                 >
                                     <span className="text-xs font-bold text-[#02042b]">{user.name}</span>
@@ -130,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                         {/* Login Button (Icon on mobile) */}
                         {user ? (
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#1e40af] text-xs font-bold ring-2 ring-white">
-                                {user.name[0]}
+                                {(user.name || 'U')[0]}
                             </div>
                         ) : (
                             <Link href="/login" className="bg-[#1e40af] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
@@ -161,15 +161,15 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
                     <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>📊</span> Predictor
                     </a>
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    <Link href="/student/colleges" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>🏛️</span> Colleges
-                    </a>
-                    <a href="/student/fees" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    </Link>
+                    <Link href="/student/fees" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>💰</span> Fees
-                    </a>
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    </Link>
+                    <Link href="/student/documents" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>📄</span> Documents
-                    </a>
+                    </Link>
 
                     {user && (
                         <button onClick={handleLogout} className="mt-2 w-full text-center bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold border border-gray-100">

@@ -36,3 +36,36 @@ export async function uploadFile(formData: FormData, bucket: string, folder: str
 
     return { success: true, publicUrl }
 }
+
+export async function getPreferenceListUrl(userName: string) {
+    const supabase = await createClient();
+
+    if (!userName) return null;
+
+    const fileName = `${userName}.pdf`;
+
+    // Generate Public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from('preference_list')
+        .getPublicUrl(fileName);
+
+    const downloadUrl = `${publicUrl}?download=`;
+
+    console.log('[DEBUG] Checking URL availability:', publicUrl);
+
+    try {
+        // Check existence on the raw URL (without query params)
+        const response = await fetch(publicUrl, { method: 'HEAD', cache: 'no-store' });
+
+        if (response.ok) {
+            console.log('[DEBUG] File found via HEAD check');
+            return downloadUrl; // Return the version that forces download
+        } else {
+            console.log('[DEBUG] File not found (Status):', response.status);
+            return null;
+        }
+    } catch (error) {
+        console.error('[DEBUG] Access check failed:', error);
+        return null;
+    }
+}

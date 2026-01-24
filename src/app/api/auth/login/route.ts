@@ -12,8 +12,14 @@ export async function POST(request: Request) {
 
     // Check if identifier is likely a username (no @)
     if (identifier && !identifier.includes('@')) {
+        // Use Admin Client to bypass RLS for this lookup
+        // We dynamically import to avoid heavy load if not needed, or just use standard import if top-level available.
+        // But since we need robust lookup:
+        const { createAdminClient } = await import('@/lib/server/supabase-admin');
+        const adminSupabase = createAdminClient();
+
         // Try exact match first
-        const { data: userExact, error: errorExact } = await supabase
+        const { data: userExact, error: errorExact } = await adminSupabase
             .from('User')
             .select('email')
             .eq('userName', identifier)
@@ -23,7 +29,7 @@ export async function POST(request: Request) {
             email = userExact.email;
         } else {
             // Try lowercase match
-            const { data: userLower, error: errorLower } = await supabase
+            const { data: userLower, error: errorLower } = await adminSupabase
                 .from('User')
                 .select('email')
                 .eq('userName', identifier.toLowerCase())

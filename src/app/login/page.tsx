@@ -59,6 +59,9 @@ export default function LoginPage() {
           if (role === 'admin' || role === 'super_admin') {
             console.log('Redirecting to admin dashboard');
             router.push('/admin');
+          } else if (role === 'mentor') {
+            console.log('Redirecting to mentor dashboard');
+            router.push('/mentor');
           } else {
             console.log('Redirecting to student dashboard');
             router.push('/student/dashboard');

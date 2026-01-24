@@ -17,7 +17,7 @@ export async function getCurrentUser() {
     // Fetch expanded profile from User table
     const { data: dbUser, error } = await supabase
         .from('User')
-        .select('*, StudentProfile(*)')
+        .select('*, StudentProfile(*, mentor:MentorProfile(*))')
         .eq('id', authUser.id)
         .single()
 
@@ -27,11 +27,17 @@ export async function getCurrentUser() {
         console.log('getCurrentUser: Found DB user role:', dbUser?.role);
     }
 
-    if (!dbUser) return { ...authUser };
+    if (!dbUser) {
+        return {
+            ...authUser,
+            role: authUser.user_metadata?.role || null // Fallback to metadata
+        };
+    }
 
     return {
         ...authUser,
         ...dbUser, // Merge DB fields like userName, role, etc.
+        role: dbUser.role || authUser.user_metadata?.role // Prefer DB but fallback to metadata
     }
 }
 
@@ -49,14 +55,32 @@ export async function finalizeAccount(password: string, username?: string) {
 
     // Update username if provided
     if (username) {
+        const sanitizedUsername = username.toLowerCase().trim().replace(/\s+/g, '');
+
+        if (sanitizedUsername.length < 3) {
+            return { success: false, error: 'Username must be at least 3 characters long.' }
+        }
+
         const { data: userData } = await supabase.auth.getUser();
         const userId = userData.user?.id;
 
         if (userId) {
+            // Check uniqueness
+            const { data: existingUser } = await supabase
+                .from('User')
+                .select('id')
+                .eq('userName', sanitizedUsername)
+                .neq('id', userId) // Exclude self
+                .single();
+
+            if (existingUser) {
+                return { success: false, error: 'Username is already taken.' }
+            }
+
             const { error: userError } = await supabase
                 .from('User')
                 .update({
-                    userName: username,
+                    userName: sanitizedUsername,
                     updatedAt: new Date()
                 })
                 .eq('id', userId);

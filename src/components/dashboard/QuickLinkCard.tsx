@@ -26,11 +26,7 @@ const QuickLinkCard: React.FC<QuickLinkCardProps> = ({ icon, title, subtitle }) 
                 {subtitle}
             </p>
 
-            {/* Footer / CTA - Pushed to bottom */}
-            <div className="mt-auto flex items-center justify-center text-[9px] font-black text-[#1e40af] uppercase tracking-widest group-hover:gap-2 transition-all duration-300">
-                Explore More
-                <span className="ml-1.5 transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </div>
+            {/* Footer removed as per request to make the whole card clickable without text */}
         </div>
     );
 };
