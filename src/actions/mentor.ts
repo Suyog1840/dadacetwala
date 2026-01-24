@@ -36,7 +36,7 @@ export async function createMentor(prevState: any, formData: FormData) {
                 console.error('List Users Error:', listError);
                 return { success: false, error: 'User exists but failed to retrieve details.' }
             }
-            const existingUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+            const existingUser = users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
 
             if (!existingUser) {
                 return { success: false, error: 'User reported as registered but not found in list.' }

@@ -95,10 +95,6 @@ export async function enrollStudentFirstStep(formData: any) {
     });
 
     if (error) {
-        console.log("DEBUG: SignUp Error:", JSON.stringify(error, null, 2));
-        console.log("DEBUG: SignUp Error Message:", error.message);
-        console.log("DEBUG: SignUp Error Code:", error.code);
-
         // If user already exists but not logged in
         if (error.message.includes("already registered") || error.code === "user_already_exists") {
             // Check if this is an "orphan" user (exists in Auth but missing in DB due to reset)
@@ -120,13 +116,38 @@ export async function enrollStudentFirstStep(formData: any) {
 
                         // If they don't exist in DB, we must have reset the DB. Re-create them!
                         if (!dbUser) {
-                            console.log('Found orphan auth user, recreating DB record:', existingAuthUser.id);
-                            // Proceed to create the DB record using the EXISTING auth ID
-                            const userId = existingAuthUser.id;
-                            const generatedUsername = (formData.fullName || formData.email.split('@')[0])
+                            console.log('Found orphan auth user, DELETING and RECREATING:', existingAuthUser.id);
+
+                            // 1. Delete the "ghost" auth user
+                            await adminClient.auth.admin.deleteUser(existingAuthUser.id);
+
+                            // 2. Resume normal flow (the code below catching the error will now succeed on next try? 
+                            // No, we need to explicitly create it HERE or return to let the main logic retry.
+                            // Better: Explicitly create new auth user here using the SAME logic as the main flow.
+
+                            const tempPassword = `Temp@${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 10)}`;
+                            const { data: newData, error: newAuthError } = await supabase.auth.signUp({
+                                email: formData.email,
+                                password: tempPassword,
+                            });
+
+                            if (newAuthError || !newData.user) {
+                                return { success: false, error: `Recovery (Re-signup) failed: ${newAuthError?.message}` };
+                            }
+
+                            const userId = newData.user.id;
+
+                            // Generate base username
+                            let baseUsername = (formData.fullName || formData.email.split('@')[0])
                                 .toLowerCase()
                                 .trim()
-                                .replace(/\s+/g, '_');
+                                .replace(/\s+/g, '') // Remove all spaces
+                                .replace(/[^a-z0-9_]/g, ''); // Keep only alphanumeric and underscore
+
+                            let generatedUsername = baseUsername;
+                            // ... (Unique username logic is complex to copy-paste, let's reuse or simplify)
+                            // Ideally we refactor username generation to a helper, but for now let's just use a simple random suffix to assume uniqueness for recovery
+                            generatedUsername = `${baseUsername}_${crypto.randomUUID().slice(0, 4)}`;
 
                             // Insert into User table
                             const { error: userError } = await supabase.from('User').insert({
@@ -166,7 +187,7 @@ export async function enrollStudentFirstStep(formData: any) {
                             }
 
                             // Success! Return success as if new user
-                            return { success: true, userId, isExistingUser: false, recovered: true };
+                            return { success: true, userId, tempPassword, isExistingUser: false, recovered: true };
                         }
                     }
                 }

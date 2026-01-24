@@ -11,7 +11,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
 
 import { enrollStudentFirstStep } from '@/actions/enrollment';
-import { recordPayment } from '@/actions/payment';
+import { createRazorpayOrder, verifyRazorpayPayment } from '@/actions/payment';
 import { finalizeAccount, getCurrentUser } from '@/actions/user';
 
 // Enrollment Flow Component
@@ -23,6 +23,8 @@ function EnrollmentFlow() {
 
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+
+
     const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
     const [currentTempPassword, setCurrentTempPassword] = useState<string | null>(null);
     const [isExistingUser, setIsExistingUser] = useState(false);
@@ -88,10 +90,27 @@ function EnrollmentFlow() {
         }
     };
 
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const handlePayment = async () => {
         setIsLoading(true);
 
         try {
+            const res = await loadRazorpay();
+            if (!res) {
+                alert('Razorpay SDK failed to load. Are you online?');
+                setIsLoading(false);
+                return;
+            }
+
             let userId = registeredUserId;
 
             if (!userId) {
@@ -103,30 +122,74 @@ function EnrollmentFlow() {
             if (!userId) {
                 alert('User registration not found. Please try Step 1 again.');
                 setStep(1);
+                setIsLoading(false);
                 return;
             }
 
-            // Call Server Action for Payment
-            const result = await recordPayment({
-                userId: userId,
-                amount: Number(price)
-            });
+            // Create Order
+            const result = await createRazorpayOrder(Number(price));
 
-            if (!result.success) {
-                console.error('Payment error:', result.error);
-                alert(`Payment recording failed: ${result.error}`);
+            if (!result.success || !result.orderId) {
+                console.error('Order creation error:', result.error);
+                alert(`Could not initiate payment: ${result.error}`);
+                setIsLoading(false);
                 return;
             }
 
-            if (isExistingUser) {
-                setSuccess(true);
-                return;
-            }
-            setStep(3);
+            const options = {
+                key: result.keyId,
+                amount: result.amount,
+                currency: result.currency,
+                name: "Dadacetwala",
+                description: `Enrollment for ${getPlanName()}`,
+                order_id: result.orderId,
+                image: '/logo.png', // Add logo if available
+                handler: async function (response: any) {
+                    try {
+                        const verifyResult = await verifyRazorpayPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            userId: userId!,
+                            amount: Number(price)
+                        });
+
+                        if (verifyResult.success) {
+                            setIsLoading(false);
+                            // ALWAYS go to Step 3 as per user request to allow credential creation/update
+                            setStep(3);
+                        } else {
+                            console.error('Payment verification failed:', verifyResult.error);
+                            alert(`Payment verification failed: ${verifyResult.error}`);
+                            setIsLoading(false);
+                        }
+                    } catch (e: any) {
+                        console.error('Handler Exception:', e);
+                        alert(`Verification error: ${e.message}`);
+                        setIsLoading(false);
+                    }
+                },
+                prefill: {
+                    name: formData.fullName,
+                    email: formData.email,
+                    contact: formData.contactNumber.replace(/\D/g, ''), // Remove non-digits for cleaner passing
+                },
+                theme: {
+                    color: "#1e40af",
+                },
+                modal: {
+                    ondismiss: function () {
+                        setIsLoading(false);
+                    }
+                }
+            };
+
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.open();
+
         } catch (err) {
             console.error('Unexpected error:', err);
             alert('An unexpected error occurred during payment processing.');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -167,20 +230,29 @@ function EnrollmentFlow() {
                 user = await getCurrentUser();
             }
 
-            // Update password & username via Server Action
-            const result = await finalizeAccount(formData.password, formData.username);
+            // Update password & username via Server Action (Passing temp creds in case session is lost)
+            // Update password & username via Server Action (Passing temp creds in case session is lost)
+            // Note: We prioritize using the established session, but if that fails, the server action needs the creds to re-auth
+            const result = await finalizeAccount(
+                formData.password,
+                formData.username,
+                formData.email,
+                currentTempPassword || undefined
+            );
 
             if (!result.success) {
                 console.error('Finalize error:', result.error);
                 alert(`Failed to finish setup: ${result.error}`);
+                setIsLoading(false);
                 return;
             }
 
-            router.push('/student/dashboard');
+            console.log('Account finalized successfully. Redirecting...');
+            window.location.href = '/student/dashboard';
+
         } catch (err) {
             console.error('Unexpected error:', err);
             alert('An unexpected error occurred while finishing setup.');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -445,42 +517,13 @@ function EnrollmentFlow() {
                     </div>
 
                     <div className="px-5 py-5">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Select Payment Method</p>
-                        <div className="grid grid-cols-2 gap-2 mb-4">
-                            {['UPI', 'CARD', 'NETBANKING', 'WALLET'].map((method) => (
-                                <button
-                                    key={method}
-                                    className={`
-                                    py-2.5 rounded-lg border font-black text-[9px] uppercase tracking-wider transition-all
-                                    ${method === 'UPI'
-                                            ? 'border-[#1e40af] text-[#1e40af] bg-blue-50'
-                                            : 'border-gray-100 text-gray-400 hover:border-gray-200'
-                                        }
-                                `}
-                                >
-                                    {method}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                            <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[10px] font-bold text-gray-500">Transaction ID</span>
-                                <span className="text-[10px] font-black text-[#020617]">#TXN_{Date.now().toString().slice(-8)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-bold text-gray-500">Convenience Fee</span>
-                                <span className="text-[10px] font-black text-green-500">FREE</span>
-                            </div>
-                        </div>
-
                         <Button
                             fullWidth
                             size="md"
                             onClick={handlePayment}
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Processing...' : `PAY ₹${price} NOW`}
+                            {isLoading ? 'Processing...' : `PAY SECURELY ₹${price}`}
                         </Button>
 
                         <div className="text-center mt-3">
