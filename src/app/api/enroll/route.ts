@@ -1,1 +1,5 @@
-//route for the enrollment
+import { NextResponse } from 'next/server';
+
+export async function POST() {
+    return NextResponse.json({ message: 'Enrollment API placeholder' });
+}

@@ -8,11 +8,8 @@ export async function getCurrentUser() {
     const { data: { user: authUser } } = await supabase.auth.getUser()
 
     if (!authUser) {
-        console.log('getCurrentUser: No auth user found');
         return null
     }
-
-    console.log('getCurrentUser: Found auth user', authUser.id);
 
     // Fetch expanded profile from User table
     const { data: dbUser, error } = await supabase
@@ -23,8 +20,6 @@ export async function getCurrentUser() {
 
     if (error) {
         console.error('getCurrentUser: Error fetching DB user', error);
-    } else {
-        console.log('getCurrentUser: Found DB user role:', dbUser?.role);
     }
 
     if (!dbUser) {
@@ -41,12 +36,48 @@ export async function getCurrentUser() {
     }
 }
 
-export async function finalizeAccount(password: string, username?: string) {
+export async function finalizeAccount(password: string, username?: string, tempEmail?: string, tempPassword?: string) {
+    console.log('[DEBUG] finalizeAccount: Started', { hasPassword: !!password, username, hasTempCreds: !!(tempEmail && tempPassword) });
     const supabase = await createClient()
 
+    // 1. Ensure we are authenticated
+    let sessionUser = null;
+    const { data: { user } } = await supabase.auth.getUser();
+    sessionUser = user;
+
+    if (!sessionUser) {
+        console.log('[DEBUG] finalizeAccount: No active session found.');
+        if (tempEmail && tempPassword) {
+            console.log('[DEBUG] finalizeAccount: Attempting internal sign-in with temp creds...');
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: tempEmail,
+                password: tempPassword
+            });
+
+            if (signInError) {
+                return { success: false, error: `Internal Auth Failed: ${signInError.message}` };
+            }
+            console.log('[DEBUG] finalizeAccount: Internal sign-in successful.');
+
+            // Refresh user after sign in
+            const { data: { user: newUser } } = await supabase.auth.getUser();
+            sessionUser = newUser;
+        } else {
+            return { success: false, error: 'Session expired. Please refresh and try logging in.' };
+        }
+    }
+
+    if (!sessionUser) {
+        return { success: false, error: 'Authentication failed.' };
+    }
+
+    const userId = sessionUser.id;
+
     // Update password
+    console.log('[DEBUG] finalizeAccount: Updating password...');
     const { error: authError } = await supabase.auth.updateUser({
         password: password,
+        data: { is_setup_complete: true }
     });
 
     if (authError) {
@@ -61,33 +92,29 @@ export async function finalizeAccount(password: string, username?: string) {
             return { success: false, error: 'Username must be at least 3 characters long.' }
         }
 
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData.user?.id;
+        // Check uniqueness
+        const { data: existingUser } = await supabase
+            .from('User')
+            .select('id')
+            .eq('userName', sanitizedUsername)
+            .neq('id', userId) // Exclude self
+            .single();
 
-        if (userId) {
-            // Check uniqueness
-            const { data: existingUser } = await supabase
-                .from('User')
-                .select('id')
-                .eq('userName', sanitizedUsername)
-                .neq('id', userId) // Exclude self
-                .single();
+        if (existingUser) {
+            return { success: false, error: 'Username is already taken.' }
+        }
 
-            if (existingUser) {
-                return { success: false, error: 'Username is already taken.' }
-            }
+        const { error: userError } = await supabase
+            .from('User')
+            .update({
+                userName: sanitizedUsername,
+                updatedAt: new Date(),
+                isRegistered: true
+            })
+            .eq('id', userId);
 
-            const { error: userError } = await supabase
-                .from('User')
-                .update({
-                    userName: sanitizedUsername,
-                    updatedAt: new Date()
-                })
-                .eq('id', userId);
-
-            if (userError) {
-                return { success: false, error: `Username update failed: ${userError.message}` }
-            }
+        if (userError) {
+            return { success: false, error: `Username update failed: ${userError.message}` }
         }
     }
 
