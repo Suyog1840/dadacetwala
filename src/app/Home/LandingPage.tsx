@@ -11,9 +11,30 @@ import { Achievements } from '../../components/features/Achievements';
 import { FAQ } from '../../components/features/FAQ';
 import { PremiereResources } from '../../components/features/PremiereResources';
 
+// Import Local Logos
+import djLogo from '../../assets/dj.png';
+import pccoeLogo from '../../assets/pccoe.png';
+import pictLogo from '../../assets/pict.png';
+import spitLogo from '../../assets/spit.png';
+import vitLogo from '../../assets/vit.png';
+import vjtiLogo from '../../assets/vjti.png';
+import walchandLogo from '../../assets/walchand.png';
+import coepLogo from '../../assets/coep.png';
+
 interface LandingPageProps {
     user?: User | null;
 }
+
+const COLLEGES = [
+    { name: 'COEP', logo: coepLogo.src },
+    { name: 'VJTI', logo: vjtiLogo.src },
+    { name: 'SPIT', logo: spitLogo.src },
+    { name: 'PICT', logo: pictLogo.src },
+    { name: 'VIT PUNE', logo: vitLogo.src },
+    { name: 'WALCHAND', logo: walchandLogo.src },
+    { name: 'D.J. SANGHVI', logo: djLogo.src },
+    { name: 'PCCOE', logo: pccoeLogo.src }
+];
 
 const LandingPage: React.FC<LandingPageProps> = ({ user }) => {
     const handleLogout = () => {
@@ -59,26 +80,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ user }) => {
                     </button>
                 </div>
 
-                {/* Social Proof */}
-                <div className="flex items-center justify-center gap-4 mb-8">
-                    <div className="flex -space-x-3">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm">
-                                <img src={`https://i.pravatar.cc/100?img=${i + 15}`} alt="Student" className="w-full h-full object-cover" />
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col items-start">
-                        <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                                <svg key={s} className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                            ))}
-                        </div>
-                        <p className="text-[10px] font-bold text-gray-500">
-                            Join <span className="text-[#020617] font-black">12k+</span> Students
-                        </p>
-                    </div>
-                </div>
+
 
                 {/* Premier Institutions Slider */}
                 <div className="w-full max-w-4xl mx-auto">
@@ -93,14 +95,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ user }) => {
                         <div className="flex gap-12 w-max animate-scroll" style={{ animation: 'scroll 30s linear infinite' }}>
                             {[...Array(2)].map((_, listIndex) => (
                                 <div key={listIndex} className="flex gap-12 items-center">
-                                    {['COEP', 'VJTI', 'SPIT', 'PICT', 'VIT', 'WALCHAND', 'D.J. SANGHVI', 'PCCOE'].map((college, i) => (
-                                        <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer opacity-40 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0">
-                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 group-hover:bg-white group-hover:shadow-md group-hover:shadow-blue-100 transition-all">
-                                                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#1e40af] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                                </svg>
+                                    {COLLEGES.map((college, i) => (
+                                        <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer transition-all duration-300">
+                                            <div className="w-10 h-10 md:w-16 md:h-16 bg-white rounded-xl flex items-center justify-center border border-gray-100 group-hover:shadow-md group-hover:shadow-blue-100 transition-all p-2">
+                                                <img
+                                                    src={college.logo}
+                                                    alt={`${college.name} Logo`}
+                                                    className="w-full h-full object-contain"
+                                                />
                                             </div>
-                                            <span className="hidden md:block text-[8px] font-black text-gray-300 uppercase tracking-widest group-hover:text-[#1e40af] transition-colors">{college}</span>
+                                            <span className="hidden md:block text-[8px] font-black text-gray-300 uppercase tracking-widest group-hover:text-[#1e40af] transition-colors">{college.name}</span>
                                         </div>
                                     ))}
                                 </div>
