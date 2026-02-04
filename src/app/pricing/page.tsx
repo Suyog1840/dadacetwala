@@ -50,7 +50,7 @@ export default function PricingPage() {
                     {/* Basic Plan */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-lg relative group h-full flex flex-col">
                         <div className="mb-3">
-                            <h3 className="text-base font-black text-[#020617] mb-1">Basic Access</h3>
+                            <h3 className="text-base font-black text-[#020617] mb-1">Basic</h3>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">For Self-Driven Aspirants</p>
                         </div>
                         <div className="mb-4">
@@ -58,10 +58,11 @@ export default function PricingPage() {
                             <span className="text-[9px] font-bold text-gray-400 uppercase ml-1">/ One-time</span>
                         </div>
                         <div className="space-y-2 mb-4 flex-grow">
-                            <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> AI College Predictor</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Document Checklist</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> CAP Round Alerts</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Community Access</div>
+                            <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> Customized Preference List</div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Registration, Document and CAP rounds Guidance </div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> College/Branch Selection Guidance</div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Whatsapp , Call Supoort</div>
+                            <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> Spot round , Institutional round Guidance</div>
                         </div>
                         <Link href="/enrollment?plan=basic&price=999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Start Basic
@@ -74,18 +75,19 @@ export default function PricingPage() {
                             Most Recommended
                         </div>
                         <div className="mb-3 pt-1">
-                            <h3 className="text-base md:text-lg font-black text-[#020617] mb-1">Expert Counseling</h3>
+                            <h3 className="text-base md:text-lg font-black text-[#020617] mb-1">Pro</h3>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Our Most Popular Choice</p>
                         </div>
                         <div className="mb-4">
-                            <span className="text-3xl md:text-4xl font-black text-[#020617]">₹4,999</span>
+                            <span className="text-3xl md:text-4xl font-black text-[#020617]">₹2,999</span>
                             <span className="text-[10px] font-bold text-gray-400 uppercase ml-1">/ One-time</span>
                         </div>
                         <div className="space-y-2 mb-5 flex-grow">
+
+                            <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> All Basic Plan Features</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Personal Dedicated Mentor</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Custom Preference List Design</div>
-                            <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Priority WhatsApp Access</div>
-                            <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Choice Filling Review</div>
+                            <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Option Form Filling by experts</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Unlimited Queries</div>
                         </div>
                         <Link href="/enrollment?plan=expert&price=4999" className="block text-center w-full py-2.5 rounded-lg bg-[#1e40af] text-white text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-[#1e3a8a] shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1">
@@ -96,19 +98,19 @@ export default function PricingPage() {
                     {/* VIP Plan */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-lg relative group h-full flex flex-col">
                         <div className="mb-3">
-                            <h3 className="text-base font-black text-[#020617] mb-1">VIP Direct</h3>
+                            <h3 className="text-base font-black text-[#020617] mb-1">Premium</h3>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Total Peace of Mind</p>
                         </div>
                         <div className="mb-4">
-                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹14,999</span>
+                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹3,999</span>
                             <span className="text-[9px] font-bold text-gray-400 uppercase ml-1">/ One-time</span>
                         </div>
                         <div className="space-y-2 mb-4 flex-grow">
-                            <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> In-Person Office Meetings</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> CEO Consultation</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Institutional Seat Guidance</div>
+                            <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> All Basic + Pro Plan Features</div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> All Rounds + Registration by Experts</div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon />Management Quota Guidance</div>
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> 24/7 Priority Hotline</div>
-                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> End-to-end Documentation</div>
+                            <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Personal Offline Counselling</div>
                         </div>
                         <Link href="/enrollment?plan=vip&price=14999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Go VIP

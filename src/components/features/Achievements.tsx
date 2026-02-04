@@ -2,7 +2,7 @@ import React from 'react';
 
 const stats = [
     { value: '8,400+', label: 'Engineering Admissions', icon: '🎓' },
-    { value: '3,150+', label: 'Medical Seats Secured', icon: '🩺' },
+    { value: '1,500+', label: 'Medical Seats Secured', icon: '🩺' },
     { value: '12,000+', label: 'Happy Students', icon: '😊' },
     { value: '94.8%', label: 'Prediction Accuracy', icon: '🎯' },
 ];
