@@ -5,10 +5,11 @@ interface SearchInputProps {
     onSearch: (query: string) => void;
     placeholder?: string;
     className?: string;
+    initialValue?: string;
 }
 
-export const SearchInput = ({ onSearch, placeholder = "Search...", className = "" }: SearchInputProps) => {
-    const [value, setValue] = useState('');
+export const SearchInput = ({ onSearch, placeholder = "Search...", className = "", initialValue = "" }: SearchInputProps) => {
+    const [value, setValue] = useState(initialValue);
     const debouncedValue = useDebounce(value, 300);
 
     useEffect(() => {

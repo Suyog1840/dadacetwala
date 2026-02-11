@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/server/supabase'
 import { NextResponse } from 'next/server'
+import { User } from '@supabase/supabase-js'
 
 export async function POST(request: Request) {
     const requestUrl = new URL(request.url)
@@ -29,9 +30,10 @@ export async function POST(request: Request) {
                 const adminClient = createAdminClient();
 
                 // 1. Find the auth user ID
-                const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
-                if (listError) throw listError;
+                const { data, error: listError } = await adminClient.auth.admin.listUsers();
+                if (listError || !data) throw listError;
 
+                const users = data.users as User[];
                 const existingAuthUser = users.find(u => u.email === email);
 
                 if (existingAuthUser) {
