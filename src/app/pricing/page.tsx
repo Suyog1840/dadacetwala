@@ -54,7 +54,7 @@ export default function PricingPage() {
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">For Self-Driven Aspirants</p>
                         </div>
                         <div className="mb-4">
-                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹999</span>
+                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹1</span>
                             <span className="text-[9px] font-bold text-gray-400 uppercase ml-1">/ One-time</span>
                         </div>
                         <div className="space-y-2 mb-4 flex-grow">
@@ -64,7 +64,7 @@ export default function PricingPage() {
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Whatsapp , Call Supoort</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-medium text-gray-600"><CheckIcon /> Spot round , Institutional round Guidance</div>
                         </div>
-                        <Link href="/enrollment?plan=basic&price=999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                        <Link href="/enrollment?plan=basic&price=1" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Start Basic
                         </Link>
                     </div>
