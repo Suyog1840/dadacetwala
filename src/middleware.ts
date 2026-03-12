@@ -56,8 +56,12 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Free public resources — no login required
+    const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents']
+    const isFreeRoute = freeRoutes.some(route => request.nextUrl.pathname.startsWith(route))
+
     // 1. Redirect if not logged in
-    if (!user && (request.nextUrl.pathname.startsWith('/student') || request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/mentor'))) {
+    if (!user && !isFreeRoute && (request.nextUrl.pathname.startsWith('/student') || request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/mentor'))) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
@@ -93,6 +97,11 @@ export async function middleware(request: NextRequest) {
             if (!isEnrolled) {
                 return NextResponse.redirect(new URL('/', request.url)) // Unenrolled -> Home
             }
+        }
+
+        // Allow free routes even for unenrolled users
+        if (isFreeRoute) {
+            return response
         }
     }
 

@@ -16,12 +16,15 @@ export default function StudentLayout({
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
+        const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents'];
+        const isFreeRoute = freeRoutes.some(route => window.location.pathname.startsWith(route));
+
         const fetchUser = async () => {
             try {
                 const { getCurrentUser } = await import('@/actions/user');
                 const userData = await getCurrentUser();
                 if (userData) {
-                    if (!userData.isEnrolled && userData.role !== 'admin' && userData.role !== 'super_admin') {
+                    if (!isFreeRoute && !userData.isEnrolled && userData.role !== 'admin' && userData.role !== 'super_admin') {
                         router.push('/');
                         return;
                     }
