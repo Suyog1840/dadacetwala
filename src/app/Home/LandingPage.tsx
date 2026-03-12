@@ -87,7 +87,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ user }) => {
             <SmartPredictor />
 
             {/* Premiere Resources */}
-            <PremiereResources user={user} />
+            <PremiereResources />
 
             {/* Achievements */}
             <Achievements />
