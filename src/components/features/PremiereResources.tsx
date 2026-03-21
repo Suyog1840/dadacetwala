@@ -2,13 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ServiceCard } from './ServiceCard';
 
-import { User } from '../../types';
-
-interface PremiereResourcesProps {
-    user?: User | null;
-}
-
-export const PremiereResources: React.FC<PremiereResourcesProps> = ({ user }) => {
+export const PremiereResources: React.FC = () => {
     return (
         <section className="py-10 bg-white">
             <div className="max-w-7xl mx-auto px-6 sm:px-8">
@@ -21,7 +15,7 @@ export const PremiereResources: React.FC<PremiereResourcesProps> = ({ user }) =>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                     <div className="col-span-1">
-                        <Link href={user ? "/student/documents" : "/register"} className="block h-full">
+                        <Link href="/student/colleges" className="block h-full">
                             <ServiceCard
                                 title="College Lists"
                                 description="Access government & private college lists."
@@ -30,7 +24,7 @@ export const PremiereResources: React.FC<PremiereResourcesProps> = ({ user }) =>
                         </Link>
                     </div>
                     <div className="col-span-1">
-                        <Link href={user ? "/student/fees" : "/register"} className="block h-full">
+                        <Link href="/student/fees" className="block h-full">
                             <ServiceCard
                                 title="Fees Structure"
                                 description="Detailed tuition & fees breakdown."
@@ -39,7 +33,7 @@ export const PremiereResources: React.FC<PremiereResourcesProps> = ({ user }) =>
                         </Link>
                     </div>
                     <div className="col-span-2 md:col-span-1">
-                        <Link href={user ? "/student/documents" : "/register"} className="block h-full">
+                        <Link href="/student/documents" className="block h-full">
                             <ServiceCard
                                 title="Documents"
                                 description="Lists tailored to your category."
