@@ -71,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6 lg:gap-8">
-                        <a href="#" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Predictor</a>
+                        <Link href="/student/predictor" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Predictor</Link>
                         <Link href="/student/colleges" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Colleges</Link>
                         <Link href="/student/fees" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Fees</Link>
                         <Link href="/student/documents" className="text-gray-500 hover:text-[#1e40af] transition-colors text-[10px] font-black uppercase tracking-widest">Docs</Link>
@@ -166,9 +166,9 @@ const Navbar: React.FC<NavbarProps> = ({ user: initialUser, onLogout }) => {
             {/* Mobile Menu Dropdown */}
             {isMenuOpen && (
                 <div className="md:hidden border-t border-gray-100 bg-white absolute top-16 left-0 right-0 shadow-lg py-4 px-6 flex flex-col gap-4 animate-fade-in-down z-40">
-                    <a href="#" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
+                    <Link href="/student/predictor" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors" onClick={() => setIsMenuOpen(false)}>
                         <span>📊</span> Predictor
-                    </a>
+                    </Link>
                     <Link href="/student/colleges" className="flex items-center gap-3 py-2 text-sm font-bold text-gray-600 hover:text-[#1e40af] transition-colors">
                         <span>🏛️</span> Colleges
                     </Link>

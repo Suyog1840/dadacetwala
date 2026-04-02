@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Free public resources — no login required
-    const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents']
+    const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents', '/student/predictor']
     const isFreeRoute = freeRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
     // 1. Redirect if not logged in

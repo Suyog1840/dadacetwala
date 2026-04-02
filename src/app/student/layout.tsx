@@ -16,7 +16,7 @@ export default function StudentLayout({
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents'];
+        const freeRoutes = ['/student/fees', '/student/colleges', '/student/documents', '/student/predictor'];
         const isFreeRoute = freeRoutes.some(route => window.location.pathname.startsWith(route));
 
         const fetchUser = async () => {
