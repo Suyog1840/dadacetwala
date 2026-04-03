@@ -39,7 +39,7 @@ export const SmartPredictor: React.FC = () => {
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [gender, setGender] = useState(GENDERS[0]);
     const [homeUniversity, setHomeUniversity] = useState(UNIVERSITIES[0] || '');
-    const [branchPreference, setBranchPreference] = useState<string[]>([]);
+    const [branchPreference, setBranchPreference] = useState<string>('');
     const [districtPreference, setDistrictPreference] = useState<string[]>([]);
 
     const handleSelectMulti = (
@@ -67,7 +67,7 @@ export const SmartPredictor: React.FC = () => {
             category,
             gender,
             homeUniversity,
-            branchPreference,
+            branchPreference: branchPreference ? [branchPreference] : [],
             districtPreference
         };
 
@@ -157,33 +157,47 @@ export const SmartPredictor: React.FC = () => {
                     </select>
                 </div>
 
-                {/* Multi-selects (Checkboxes) */}
+                {/* Branch — single select radio */}
                 <div className="flex flex-col">
-                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex justify-between">
-                        <span>Branches (Optional)</span>
-                    </label>
-                    <div className="h-40 bg-gray-50/50 border border-gray-200 rounded-xl p-3 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Branch Preference</label>
+                        {branchPreference && (
+                            <button
+                                type="button"
+                                onClick={() => setBranchPreference('')}
+                                className="text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase tracking-wider transition-colors"
+                            >
+                                ✕ Clear
+                            </button>
+                        )}
+                    </div>
+                    <div className="h-40 bg-gray-50/50 border border-gray-200 rounded-xl p-3 overflow-y-auto custom-scrollbar flex flex-col gap-1.5">
                         {BRANCHES.map((b: string) => (
-                            <label key={b} className="flex items-start gap-2 cursor-pointer group">
+                            <label
+                                key={b}
+                                className={`flex items-center gap-2.5 cursor-pointer rounded-lg px-2 py-1 transition-colors ${
+                                    branchPreference === b
+                                        ? 'bg-blue-50 text-[#1e40af]'
+                                        : 'hover:bg-gray-100 text-gray-700'
+                                }`}
+                            >
                                 <input
-                                    type="checkbox"
+                                    type="radio"
+                                    name="branchPreference"
                                     value={b}
-                                    checked={branchPreference.includes(b)}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setBranchPreference(prev => [...prev, b]);
-                                        } else {
-                                            setBranchPreference(prev => prev.filter(item => item !== b));
-                                        }
-                                    }}
-                                    className="mt-1 w-4 h-4 text-[#1e40af] bg-white border-gray-300 rounded focus:ring-[#1e40af] focus:ring-2 transition-all cursor-pointer"
+                                    checked={branchPreference === b}
+                                    onChange={() => setBranchPreference(b)}
+                                    className="w-3.5 h-3.5 text-[#1e40af] border-gray-300 focus:ring-[#1e40af] focus:ring-2 cursor-pointer flex-shrink-0"
                                 />
-                                <span className="text-sm font-medium text-gray-700 group-hover:text-[#1e40af] transition-colors leading-tight">
-                                    {b}
-                                </span>
+                                <span className="text-sm font-medium leading-tight">{b}</span>
                             </label>
                         ))}
                     </div>
+                    {branchPreference && (
+                        <p className="mt-1.5 text-[10px] font-bold text-[#1e40af] uppercase tracking-wide">
+                            ✓ Selected: {branchPreference}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex flex-col">
@@ -239,15 +253,18 @@ export const SmartPredictor: React.FC = () => {
     );
 
     const renderResults = () => (
-        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 md:p-10 shadow-xl shadow-[#1e40af]/5 border border-white relative z-10 w-full text-left">
-            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 md:p-8 shadow-xl shadow-[#1e40af]/5 border border-white relative z-10 w-full text-left">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h3 className="text-2xl font-black text-[#020617]">Your Top Matches</h3>
-                    <p className="text-gray-400 text-sm font-medium">Based on your {mhtcet && `MHTCET (${mhtcet})`} {jee && `and JEE (${jee})`} scores.</p>
+                    <p className="text-gray-400 text-sm font-medium">
+                        Based on your {mhtcet && `MHTCET (${mhtcet})`}{jee && ` and JEE (${jee})`} scores — sorted by admission probability.
+                    </p>
                 </div>
                 <button
                     onClick={() => setStep('form')}
-                    className="h-10 px-6 bg-gray-100 hover:bg-gray-200 text-[#020617] rounded-xl text-xs font-bold transition-all flex items-center gap-2 uppercase tracking-wide"
+                    className="h-10 px-5 bg-gray-100 hover:bg-gray-200 text-[#020617] rounded-xl text-xs font-bold transition-all flex items-center gap-2 uppercase tracking-wide flex-shrink-0"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     Edit Details
@@ -261,45 +278,78 @@ export const SmartPredictor: React.FC = () => {
                     <p className="text-sm text-gray-500 max-w-sm mx-auto">Try adjusting your preferences (Branch, District) or changing your scores to see more options.</p>
                 </div>
             ) : (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
-                    {results.map((res, i) => (
-                        <div key={i} className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-lg hover:shadow-blue-500/10 transition-all hover:border-blue-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full">
-                                        {res.examType} Match
-                                    </span>
-                                    {res.probability > 85 && (
-                                        <span className="px-3 py-1 bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
-                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                                            Safe Choice
-                                        </span>
-                                    )}
-                                </div>
-                                <h4 className="text-lg font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight mb-1">
-                                    {res.collegeName}
-                                </h4>
-                                <div className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-2 flex-wrap">
-                                    <span className="flex items-center gap-1"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> {res.branchName}</span>
-                                    <span className="text-gray-300">•</span>
-                                    <span className="flex items-center gap-1"><svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> {res.district}</span>
-                                </div>
-                            </div>
+                <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                    <table className="w-full text-sm border-collapse min-w-[700px]">
+                        {/* Header */}
+                        <thead>
+                            <tr className="bg-[#1e40af] text-white text-[11px] font-black uppercase tracking-wider">
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40 w-10">Sr.</th>
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40 whitespace-nowrap">Code</th>
+                                <th className="py-3.5 px-4 text-left border-r border-blue-700/40">Institute Name</th>
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40 whitespace-nowrap">Branch</th>
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40">District</th>
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40">Exam</th>
+                                <th className="py-3.5 px-3 text-center border-r border-blue-700/40 whitespace-nowrap">Cutoff</th>
+                                <th className="py-3.5 px-3 text-center whitespace-nowrap">Probability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...results].sort((a, b) => b.probability - a.probability).map((res, i) => (
+                                <tr
+                                    key={i}
+                                    className={`border-b border-gray-100 hover:bg-blue-50/40 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'}`}
+                                >
+                                    {/* Sr. No. */}
+                                    <td className="py-3 px-3 text-center font-black text-gray-400 text-xs border-r border-gray-100">
+                                        {i + 1}.
+                                    </td>
 
-                            <div className="flex items-end justify-between md:flex-col md:items-end md:justify-center gap-2 min-w-[120px] bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                                <div className="text-left md:text-right">
-                                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Probability</span>
-                                    <span className={`text-2xl font-black ${res.probability > 80 ? 'text-green-600' : res.probability > 50 ? 'text-yellow-600' : 'text-orange-500'}`}>
-                                        {res.probability}%
-                                    </span>
-                                </div>
-                                <div className="text-left md:text-right">
-                                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cutoff</span>
-                                    <span className="text-sm font-bold text-gray-700">{res.standard_cutoff.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                                    {/* College Code */}
+                                    <td className="py-3 px-3 text-center font-bold text-gray-600 text-xs border-r border-gray-100 whitespace-nowrap">
+                                        {res.collegeCode}
+                                    </td>
+
+                                    {/* Institute Name */}
+                                    <td className="py-3 px-4 text-left border-r border-gray-100">
+                                        <span className="font-bold text-[#020617] text-xs leading-snug">{res.collegeName}</span>
+                                    </td>
+
+                                    {/* Branch */}
+                                    <td className="py-3 px-3 text-center border-r border-gray-100">
+                                        <span className="text-[11px] text-gray-600 font-medium leading-tight block">{res.branchName}</span>
+                                    </td>
+
+                                    {/* District */}
+                                    <td className="py-3 px-3 text-center border-r border-gray-100">
+                                        <span className="text-[11px] text-gray-500 font-medium whitespace-nowrap">{res.district}</span>
+                                    </td>
+
+                                    {/* Exam Type */}
+                                    <td className="py-3 px-3 text-center border-r border-gray-100">
+                                        <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[9px] font-black uppercase tracking-widest rounded-full whitespace-nowrap">
+                                            {res.examType}
+                                        </span>
+                                    </td>
+
+                                    {/* Cutoff */}
+                                    <td className="py-3 px-3 text-center border-r border-gray-100">
+                                        <span className="text-xs font-bold text-gray-700 tabular-nums">{res.standard_cutoff.toFixed(2)}</span>
+                                    </td>
+
+                                    {/* Probability */}
+                                    <td className="py-3 px-3 text-center">
+                                        <span className={`text-sm font-black tabular-nums ${
+                                            res.probability > 80 ? 'text-green-600' :
+                                            res.probability > 60 ? 'text-yellow-600' :
+                                            'text-orange-500'
+                                        }`}>
+                                            {res.probability}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>
@@ -310,7 +360,7 @@ export const SmartPredictor: React.FC = () => {
             <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center">
 
                 {/* Section Header */}
-                <div className="text-center mb-12">
+                <div className="text-center mb-10">
                     <h2 className="text-4xl md:text-5xl font-black text-[#020617] tracking-tight mb-4 leading-tight">
                         Predict Your Future <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1e40af] to-purple-600">Instantly</span>
                     </h2>
@@ -319,6 +369,55 @@ export const SmartPredictor: React.FC = () => {
                     </p>
                 </div>
 
+                {/* ── YouTube Video — centered above the form ── */}
+                <div className="w-full max-w-4xl mb-8">
+                    {/* Top label row */}
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gray-200"></div>
+                        <div className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-100 rounded-full shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></span>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
+                                Watch First · How to Use the Predictor
+                            </span>
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gray-200"></div>
+                    </div>
+
+                    {/* Video card */}
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-xl shadow-blue-900/8 border border-gray-100">
+                        {/* 16:9 iframe */}
+                        <div className="relative w-full" style={{ paddingBottom: '42%' }}>
+                            <iframe
+                                src="https://www.youtube.com/embed/tbXvc5a1hIw"
+                                title="How to use the DadaCETwala College Predictor"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                className="absolute inset-0 w-full h-full"
+                            />
+                        </div>
+
+                        {/* Bottom caption strip */}
+                        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
+                                    <svg className="w-3.5 h-3.5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black text-[#020617]">DadaCETwala — College Predictor Walkthrough</p>
+                                    <p className="text-[10px] text-gray-400 font-medium">Learn to get the most accurate predictions for your profile</p>
+                                </div>
+                            </div>
+                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-full">
+                                <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">Watch Before Predicting</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Predictor Form ── */}
                 <div className="w-full max-w-4xl relative">
                     {/* Background glows */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-50/50 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
@@ -327,6 +426,7 @@ export const SmartPredictor: React.FC = () => {
 
                     {step === 'form' ? renderForm() : renderResults()}
                 </div>
+
             </div>
         </section>
     );
