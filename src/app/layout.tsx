@@ -16,6 +16,8 @@ export const metadata = {
   description: "Your trusted companion for MHTCET counseling",
 };
 
+import CollegeCompanion from "@/components/features/CollegeCompanion";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -23,6 +25,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <CollegeCompanion />
       </body>
     </html>
   );
