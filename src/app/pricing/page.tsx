@@ -90,7 +90,7 @@ export default function PricingPage() {
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Option Form Filling by experts</div>
                             <div className="flex items-center text-[10px] md:text-[11px] font-bold text-[#020617]"><CheckIcon /> Unlimited Queries</div>
                         </div>
-                        <Link href="/enrollment?plan=expert&price=4999" className="block text-center w-full py-2.5 rounded-lg bg-[#1e40af] text-white text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-[#1e3a8a] shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1">
+                        <Link href="/enrollment?plan=expert&price=2999" className="block text-center w-full py-2.5 rounded-lg bg-[#1e40af] text-white text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-[#1e3a8a] shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-1">
                             Get Premium Guidance
                         </Link>
                     </div>
@@ -102,7 +102,7 @@ export default function PricingPage() {
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Total Peace of Mind</p>
                         </div>
                         <div className="mb-4">
-                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹3,999</span>
+                            <span className="text-2xl md:text-3xl font-black text-[#020617]">₹5,999</span>
                             <span className="text-[9px] font-bold text-gray-400 uppercase ml-1">/ One-time</span>
                         </div>
                         <div className="space-y-2 mb-4 flex-grow">
@@ -112,7 +112,7 @@ export default function PricingPage() {
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> 24/7 Priority Hotline</div>
                             <div className="flex items-center text-[11px] md:text-xs font-medium text-gray-600"><CheckIcon /> Personal Offline Counselling</div>
                         </div>
-                        <Link href="/enrollment?plan=vip&price=14999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                        <Link href="/enrollment?plan=vip&price=5999" className="block text-center w-full py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-[#020617] text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-gray-100 transition-colors">
                             Go VIP
                         </Link>
                     </div>
