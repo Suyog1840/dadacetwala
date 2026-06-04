@@ -76,6 +76,17 @@ export const metadata: Metadata = {
     site: "@dadacetwala",
   },
 
+  // --- Icons / Favicon ---
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/logo.png", type: "image/png" },
+    ],
+    shortcut: "/logo.png",
+  },
+
   // --- Verification (add your Search Console token here when ready) ---
   // verification: {
   //   google: "YOUR_GOOGLE_SITE_VERIFICATION_TOKEN",

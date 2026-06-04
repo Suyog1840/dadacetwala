@@ -40,7 +40,7 @@ export default function FeeCard({ fee }: FeeCardProps) {
                     Code: {fee.collegeCode}
                 </span>
 
-                <h3 className="font-bold text-[#020617] text-sm md:text-base leading-tight mb-2 line-clamp-2 min-h-[2.5rem]">
+                <h3 className="font-bold text-[#020617] text-sm md:text-base leading-tight mb-2 line-clamp-2 overflow-hidden min-h-[2.5rem]">
                     {fee.collegeName}
                 </h3>
             </div>
