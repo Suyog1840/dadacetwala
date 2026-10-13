@@ -19,8 +19,10 @@ export interface PredictionResult {
     branchCode: string;
     branchName: string;
     district: string;
-    weighted_cutoff: number;
-    standard_cutoff: number;
+    cutoff_2025_r1: number;       // Actual 2025 Round 1 cutoff for the matched category (e.g. GSC, GOBC)
+    weighted_cutoff: number;      // Internal weighted average — not for display
+    standard_cutoff: number;      // GOPEN/AI cutoff used for prestige ranking — not for display
+    matchedCategory: string;      // Which quota seat was matched (GOPEN, GSC, GOBC, TFW, AI, etc.)
     probability: number;
 }
 
